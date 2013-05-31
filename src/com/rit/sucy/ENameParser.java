@@ -17,7 +17,6 @@ public class ENameParser {
             name += pieces[i] + (i < pieces.length - 2 ? " " : "");
         }
         name = ChatColor.stripColor(name);
-        Bukkit.broadcastMessage(name);
         return name;
     }
 
