@@ -1,7 +1,12 @@
 package com.rit.sucy;
 
 import org.bukkit.ChatColor;
+import org.bukkit.block.Block;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
+import org.bukkit.event.block.BlockEvent;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -97,11 +102,32 @@ public abstract class CustomEnchantment {
     }
 
     /**
-     * Applies the enchantment affect between the two combatants
+     * Applies the enchantment affect when attacking someone
      *
      * @param user         the entity that has the enchantment
      * @param target       the entity that was struck by the enchantment
      * @param enchantLevel the level of the used enchantment
+     * @param event        the event details
      */
-    public abstract void applyEffect(LivingEntity user, LivingEntity target, int enchantLevel);
+    public void applyEffect(LivingEntity user, LivingEntity target, int enchantLevel, EntityDamageByEntityEvent event) { }
+
+    /**
+     * Applies the enchantment defensively (when taking damage)
+     *
+     * @param user         the entity hat has the enchantment
+     * @param target       the entity that attacked the enchantment, can be null
+     * @param enchantLevel the level of the used enchantment
+     * @param event        the event details (EntityDamageByEntityEvent, EntityDamageByBlockEvent, or just EntityDamageEvent)
+     */
+    public void applyDefenseEffect(LivingEntity user, LivingEntity target,
+            int enchantLevel, EntityDamageEvent event) {}
+
+    /**
+     * Applies effects while breaking blocks (for tool effects)
+     *
+     * @param player the player with the enchantment
+     * @param block  the block being broken
+     * @param event  the event details (either BlockBreakEvent or BlockDamageEvent)
+     */
+    public void applyToolEffect(Player player, Block block, BlockEvent event) {}
 }

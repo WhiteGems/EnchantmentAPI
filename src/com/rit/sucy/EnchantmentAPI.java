@@ -8,6 +8,7 @@ import java.util.Hashtable;
 
 /**
  * Contains methods to register and access custom enchantments
+ * TODO clean up the code after everything is working
  */
 public class EnchantmentAPI extends JavaPlugin {
 
