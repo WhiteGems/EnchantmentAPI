@@ -8,7 +8,9 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.ArrayList;
 import java.util.List;
 
-// Custom enchantment class (to be extended)
+/**
+ * Base class for custom enchantments
+ */
 public abstract class CustomEnchantment {
 
     // Name of enchantment
@@ -17,19 +19,36 @@ public abstract class CustomEnchantment {
     // The items that can be enchanted with the enchanting table to get this enchantment
     protected String[] naturalItems;
 
-    // Constructor
+    /**
+     * Creates a new custom enchantment with the given name that can be
+     * enchanted onto the items using an enchantment table with names
+     * given in the array.
+     *
+     * @param name         the unique name of the enchantment
+     * @param naturalItems the names of items that can normally have this enchantment
+     */
     public CustomEnchantment(String name, String[] naturalItems) {
         this.enchantName = name;
         this.naturalItems = naturalItems;
     }
 
-    // Calculates a level of enchantment based on the exp level used
-    // Return less than 1 for no enchantment
+    /**
+     * Calculates an enchantment level for this enchantment depending
+     * on the experience level the player used during an enchantment.
+     *
+     * @param  expLevel the experience level the player used
+     * @return          returns the enchantment level; returns < 1 if the enchantment should not be applied
+     */
     public int getEnchantmentLevel(int expLevel) {
         return 0;
     }
 
-    // Checks if this enchantment can normally go on the provided item
+    /**
+     * Checks if this enchantment can be normally applied to the item.
+     *
+     * @param  item the item to check for
+     * @return      true if the enchantment can be normally applied, false otherwise
+     */
     public boolean canEnchantOnto(ItemStack item) {
         for (String validItem : naturalItems) {
             if (item.getType().name().equalsIgnoreCase(validItem)) return true;
@@ -37,7 +56,13 @@ public abstract class CustomEnchantment {
         return false;
     }
 
-    // Adds this enchantment to the given item
+    /**
+     * Adds this enchantment onto the given item with the enchantment level provided
+     *
+     * @param  item         the item being enchanted
+     * @param  enchantLevel the level of enchantment
+     * @return              the enchanted item
+     */
     public ItemStack addToItem(ItemStack item, int enchantLevel) {
         ItemMeta meta = item.getItemMeta();
         List<String> metaLore = meta.getLore() == null ? new ArrayList<String>() : meta.getLore();
@@ -71,6 +96,12 @@ public abstract class CustomEnchantment {
         return item;
     }
 
-    // Apply the enchantment effect
+    /**
+     * Applies the enchantment affect between the two combatants
+     *
+     * @param user         the entity that has the enchantment
+     * @param target       the entity that was struck by the enchantment
+     * @param enchantLevel the level of the used enchantment
+     */
     public abstract void applyEffect(LivingEntity user, LivingEntity target, int enchantLevel);
 }

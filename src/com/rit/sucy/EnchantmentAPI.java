@@ -6,10 +6,17 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Hashtable;
 
+/**
+ * Contains methods to register and access custom enchantments
+ */
 public class EnchantmentAPI extends JavaPlugin {
 
     static Hashtable<String, CustomEnchantment> enchantments = new Hashtable<String, CustomEnchantment>();
 
+    /**
+     * Enables the plugin and calls for all custom enchantments from any plugins
+     * that extend the EnchantPlugin class
+     */
     @Override
     public void onEnable(){
 
@@ -22,18 +29,31 @@ public class EnchantmentAPI extends JavaPlugin {
         }
     }
 
+    /**
+     * Disables the plugin and clears all custom enchantments
+     */
     @Override
     public void onDisable() {
         HandlerList.unregisterAll(this);
         enchantments.clear();
     }
 
-    // Retrieves a custom enchantment with the given name
+    /**
+     * Retrieves the custom enchantment with the given name
+     *
+     * @param  name the name of the enchantment
+     * @return      the enchantment with the given name, null if not found
+     */
     public static CustomEnchantment getEnchantment(String name) {
         return enchantments.get(name);
     }
 
-    // Registers the custom enchantment for activating and enchantment table use
+    /**
+     * Registers the given custom enchantment for the plugin
+     *
+     * @param  enchantment the enchantment to register
+     * @return             true if it was registered, false otherwise
+     */
     public static boolean registerCustomEnchantment(CustomEnchantment enchantment) {
         if (enchantments.containsKey(enchantment.enchantName)) return false;
         enchantments.put(enchantment.enchantName, enchantment);

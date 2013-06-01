@@ -3,7 +3,7 @@ package com.rit.sucy;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
-public class ENameParser {
+class ENameParser {
 
     static String parseName(String lore) {
         if (!lore.contains(" ")) return null;

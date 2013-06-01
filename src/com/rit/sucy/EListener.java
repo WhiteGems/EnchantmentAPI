@@ -51,7 +51,6 @@ class EListener implements Listener {
         for (CustomEnchantment enchantment : EnchantmentAPI.enchantments.values()) {
             if (enchantment.canEnchantOnto(item)) {
                 int enchantLevel = enchantment.getEnchantmentLevel(event.getExpLevelCost());
-                event.getEnchanter().sendMessage("Exp: " + event.getExpLevelCost() + ", Level: " + enchantLevel);
                 if (enchantLevel > 0) enchantment.addToItem(item, enchantLevel);
             }
         }
