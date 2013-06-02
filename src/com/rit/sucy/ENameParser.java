@@ -1,16 +1,22 @@
 package com.rit.sucy;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
+/**
+ * Parses lore names into enchantment names and levels
+ */
 class ENameParser {
 
+    /**
+     * Parses an enchantment name from a lore string
+     *
+     * @param lore the lore string to parse
+     * @return     enchantment name
+     */
     static String parseName(String lore) {
         if (!lore.contains(" ")) return null;
 
         String[] pieces = lore.split(" ");
-        if (ERomanNumeral.getValueOf(pieces[pieces.length - 1]) == 0)
-            return null;
 
         String name = "";
         for (int i = 0; i < pieces.length - 1; i++) {
@@ -20,6 +26,11 @@ class ENameParser {
         return name;
     }
 
+    /**
+     * Parses an enchantment level from a lore string
+     * @param lore the lore string to parse
+     * @return     enchantment name
+     */
     static int parseLevel(String lore) {
         if (!lore.contains(" ")) return 0;
 

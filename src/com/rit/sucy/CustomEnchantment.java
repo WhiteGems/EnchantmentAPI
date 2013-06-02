@@ -7,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -18,10 +19,14 @@ import java.util.List;
  */
 public abstract class CustomEnchantment {
 
-    // Name of enchantment
+    /**
+     * Name of the enchantment
+     */
     protected String enchantName;
 
-    // The items that can be enchanted with the enchanting table to get this enchantment
+    /**
+     * Names of all the items that can receive this enchantment at an enchanting table
+     */
     protected String[] naturalItems;
 
     /**
@@ -84,6 +89,7 @@ public abstract class CustomEnchantment {
                 // Compare the enchantment levels
                 String[] pieces = lore.split(" ");
                 int level = ERomanNumeral.getValueOf(pieces[pieces.length - 1]);
+                if (level == 0) continue;
 
                 // Leave higher enchantments alone
                 if (level >= enchantLevel) return item;
@@ -129,5 +135,13 @@ public abstract class CustomEnchantment {
      * @param block  the block being broken
      * @param event  the event details (either BlockBreakEvent or BlockDamageEvent)
      */
-    public void applyToolEffect(Player player, Block block, BlockEvent event) {}
+    public void applyToolEffect(Player player, Block block, int enchantLevel, BlockEvent event) {}
+
+    /**
+     * Applies effects when the player left or right clicks (For other kinds of enchantments like spells)
+     *
+     * @param player the player with the enchantment
+     * @param event  the event details
+     */
+    public void applyMiscEffect(Player player, int enchantLevel, PlayerInteractEvent event) {}
 }
