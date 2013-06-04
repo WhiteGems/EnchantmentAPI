@@ -1,5 +1,6 @@
 package com.rit.sucy;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.LivingEntity;
@@ -40,6 +41,15 @@ public abstract class CustomEnchantment {
     public CustomEnchantment(String name, String[] naturalItems) {
         this.enchantName = name;
         this.naturalItems = naturalItems;
+    }
+
+    /**
+     * Retrieves the name of the enchantment
+     *
+     * @return Enchantment name
+     */
+    public String name() {
+        return enchantName;
     }
 
     /**
@@ -95,7 +105,9 @@ public abstract class CustomEnchantment {
                 if (level >= enchantLevel) return item;
 
                 // Replace lower enchantments
-                else meta.getLore().remove(lore);
+                List<String> newLore = meta.getLore();
+                newLore.remove(lore);
+                meta.setLore(newLore);
                 break;
             }
         }
@@ -104,6 +116,38 @@ public abstract class CustomEnchantment {
         metaLore.add(0, ChatColor.GRAY + enchantName + " " + ERomanNumeral.numeralOf(enchantLevel));
         meta.setLore(metaLore);
         item.setItemMeta(meta);
+        return item;
+    }
+
+    /**
+     * Removes this enchantment from the item if it exists
+     *
+     * @param item item to remove this enchantment from
+     * @return     the item without this enchantment
+     */
+    public ItemStack removeFromItem(ItemStack item) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+        if (!meta.hasLore()) return item;
+        List<String> metaLore = meta.getLore();
+
+        // Make sure the enchantment doesn't already exist on the item
+        for (String lore : metaLore) {
+            if (lore.contains(enchantName)) {
+
+                // Confirm that the enchanting name is the same
+                String loreName = ENameParser.parseName(lore);
+                if (loreName == null) continue;
+                if (!enchantName.equalsIgnoreCase(loreName)) continue;
+
+                // Compare the enchantment levels
+                List<String> newLore = meta.getLore();
+                newLore.remove(lore);
+                meta.setLore(newLore);
+                item.setItemMeta(meta);
+                return item;
+            }
+        }
         return item;
     }
 
@@ -144,4 +188,20 @@ public abstract class CustomEnchantment {
      * @param event  the event details
      */
     public void applyMiscEffect(Player player, int enchantLevel, PlayerInteractEvent event) {}
+
+    /**
+     * Applies effects when the item is equipped
+     *
+     * @param player       the player that equipped it
+     * @param enchantLevel the level of enchantment
+     */
+    public void applyEquipEffect(Player player, int enchantLevel) {}
+
+    /**
+     * Applies effects when the item is unequipped
+     *
+     * @param player       the player that unequipped it
+     * @param enchantLevel the level of enchantment
+     */
+    public void applyUnequipEffect(Player player, int enchantLevel) {}
 }

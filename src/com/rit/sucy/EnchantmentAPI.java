@@ -1,17 +1,25 @@
 package com.rit.sucy;
 
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Collection;
-import java.util.Hashtable;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Contains methods to register and access custom enchantments
+ *
+ * @author  Steven Sucy
+ * @version 1.5
  */
-public class EnchantmentAPI extends JavaPlugin {
+public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
 
     /**
      * A table of the custom enchantments that are registered
@@ -27,10 +35,14 @@ public class EnchantmentAPI extends JavaPlugin {
 
         // Listeners
         new EListener(this);
+        getCommand("enchantlist").setExecutor(this);
 
         // Get custom enchantments from other plugins
         for (Plugin plugin : getServer().getPluginManager().getPlugins()) {
             if (plugin instanceof EnchantPlugin) ((EnchantPlugin) plugin).registerEnchantments();
+        }
+        for (Player player : getServer().getOnlinePlayers()) {
+            EEquip.loadPlayer(player);
         }
     }
 
@@ -41,6 +53,26 @@ public class EnchantmentAPI extends JavaPlugin {
     public void onDisable() {
         HandlerList.unregisterAll(this);
         enchantments.clear();
+        EEquip.clear();
+    }
+
+    /**
+     * Displays the list of registered enchantments when the command /enchantlist is executed
+     *
+     * @param sender the sender of the command that will receive the list
+     * @param cmd    the command (not used because it can only be one thing)
+     * @param label  the command label (not used)
+     * @param args   arguments (not used)
+     * @return       true
+     */
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+        String message = "Registered enchantments: ";
+        if (enchantments.size() > 0) {
+            for (CustomEnchantment enchantment : enchantments.values()) message += enchantment.name() + ", ";
+            message = message.substring(0, message.length() - 2);
+        }
+        sender.sendMessage(message);
+        return true;
     }
 
     /**
@@ -88,9 +120,83 @@ public class EnchantmentAPI extends JavaPlugin {
      * @return             true if it was registered, false otherwise
      */
     public static boolean registerCustomEnchantment(CustomEnchantment enchantment) {
-        if (enchantments.contains(enchantment.enchantName.toUpperCase())) return false;
+        if (enchantments.containsKey(enchantment.enchantName.toUpperCase())) return false;
         enchantments.put(enchantment.enchantName.toUpperCase(), enchantment);
         return true;
+    }
+
+    /**
+     * Unregisters the enchantment with the given name
+     *
+     * @param enchantmentName name of the enchantment to unregister
+     * @return                true if it was removed, false if it didn't exist
+     */
+    public static boolean unregisterCustomEnchantment(String enchantmentName) {
+        if (enchantments.containsKey(enchantmentName.toUpperCase())) {
+            enchantments.remove(enchantmentName.toUpperCase());
+            return true;
+        }
+        else return false;
+    }
+
+    /**
+     * Returns the list of custom enchantments applied to the item
+     *
+     * @param item the item that's being checked for enchantments
+     * @return     the list of attached enchantments
+     */
+    public static Map<CustomEnchantment, Integer> getEnchantments(ItemStack item) {
+        HashMap<CustomEnchantment, Integer> list = new HashMap<CustomEnchantment, Integer>();
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return list;
+        if (!meta.hasLore()) return list;
+        for (String lore : meta.getLore()) {
+            String name = ENameParser.parseName(lore);
+            int level = ENameParser.parseLevel(lore);
+            if (name == null) continue;
+            if (level == 0) continue;
+            if (EnchantmentAPI.isRegistered(name)) {
+                list.put(EnchantmentAPI.getEnchantment(name), level);
+            }
+        }
+        return list;
+    }
+
+    /**
+     * Checks if the given item has an enchantment with the given name
+     *
+     * @param item            item to check
+     * @param enchantmentName name of enchantment
+     * @return                true if it has the enchantment, false otherwise
+     */
+    public static boolean itemHasEnchantment(ItemStack item, String enchantmentName) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return false;
+        if (!meta.hasLore()) return false;
+        for (String lore : meta.getLore()) {
+            if (lore.contains(enchantmentName) && ENameParser.parseLevel(lore) > 0)
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * Removes all enchantments from the given item
+     *
+     * @param item item to clear enchantments from
+     * @return     the item without enchantments
+     */
+    public static ItemStack removeEnchantments(ItemStack item) {
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+        if (!meta.hasLore()) return item;
+        List<String> lore = meta.getLore();
+        for (Map.Entry<CustomEnchantment, Integer> entry : getEnchantments(item).entrySet()) {
+            lore.remove(ChatColor.GRAY + entry.getKey().name() + " " + ERomanNumeral.numeralOf(entry.getValue()));
+        }
+        meta.setLore(lore);
+        item.setItemMeta(meta);
+        return item;
     }
 
     // Does nothing when run as .jar

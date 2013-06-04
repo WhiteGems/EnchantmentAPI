@@ -2,6 +2,9 @@ package com.rit.sucy;
 
 import org.bukkit.ChatColor;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Parses lore names into enchantment names and levels
  */

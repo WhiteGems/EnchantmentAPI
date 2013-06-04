@@ -1,6 +1,5 @@
 package com.rit.sucy;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -12,7 +11,11 @@ import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemBreakEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -27,6 +30,8 @@ import java.util.Map;
  */
 class EListener implements Listener {
 
+    Plugin plugin;
+
     /**
      * Basic constructor that registers this listener
      *
@@ -34,6 +39,7 @@ class EListener implements Listener {
      */
     public EListener(Plugin plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        this.plugin = plugin;
     }
 
     /**
@@ -143,7 +149,7 @@ class EListener implements Listener {
     }
 
     /**
-     * Event for miscellaneous enchantments
+     * Event for miscellaneous enchantments and Equip effects
      *
      * @param event the event details
      */
@@ -154,6 +160,48 @@ class EListener implements Listener {
         for (Map.Entry<CustomEnchantment, Integer> entry : getValidEnchantments(getItems(event.getPlayer())).entrySet()) {
             entry.getKey().applyMiscEffect(event.getPlayer(), entry.getValue(), event);
         }
+
+        new EEquip(event.getPlayer()).runTaskLater(plugin, 1);
+    }
+
+    /**
+     * Event for Equip and Unequip effects
+     *
+     * @param event event details
+     */
+    @EventHandler (priority =  EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEquip(InventoryClickEvent event) {
+        new EEquip(plugin.getServer().getPlayer(event.getWhoClicked().getName())).runTaskLater(plugin, 1);
+    }
+
+    /**
+     * Event for Equip and Unequip events
+     *
+     * @param event event details
+     */
+    @EventHandler
+    public void onBreak(PlayerItemBreakEvent event) {
+        new EEquip(event.getPlayer()).runTaskLater(plugin, 1);
+    }
+
+    /**
+     * Equipment loading event
+     *
+     * @param event event details
+     */
+    @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onConnect(PlayerJoinEvent event) {
+        EEquip.loadPlayer(event.getPlayer());
+    }
+
+    /**
+     * Equipment loading event
+     *
+     * @param event event details
+     */
+    @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onDisconnect(PlayerQuitEvent event) {
+        EEquip.clearPlayer(event.getPlayer());
     }
 
     /**
