@@ -73,14 +73,13 @@ public abstract class CustomEnchantment {
     }
 
     /**
-     * Calculates an enchantment level for this enchantment depending
-     * on the experience level the player used during an enchantment.
+     * Retrieves the level of enchantment depending on the modified exp level (max 49)
      *
-     * @param  expLevel the experience level the player used
+     * @param  expLevel the experience level the player used (between 1 and 49)
      * @return          returns the enchantment level; returns < 1 if the enchantment should not be applied
      */
     public int getEnchantmentLevel(int expLevel) {
-        return 0;
+        return 1;
     }
 
     /**

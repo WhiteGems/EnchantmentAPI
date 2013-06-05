@@ -221,6 +221,11 @@ class EListener implements Listener {
         event.getEnchanter().setLevel(event.getEnchanter().getLevel() - event.getExpLevelCost());
     }
 
+    /**
+     * Doesn't show options for items with custom enchantments
+     *
+     * @param event event details
+     */
     @EventHandler
     public void onPrepareEnchant(PrepareItemEnchantEvent event) {
         if (EnchantmentAPI.getEnchantments(event.getItem()).size() > 0) {
