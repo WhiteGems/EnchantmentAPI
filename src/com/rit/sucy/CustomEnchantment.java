@@ -31,6 +31,11 @@ public abstract class CustomEnchantment {
     protected String[] naturalItems;
 
     /**
+     * Weight of the enchantment
+     */
+    int weight;
+
+    /**
      * Creates a new custom enchantment with the given name that can be
      * enchanted onto the items using an enchantment table with names
      * given in the array.
@@ -39,8 +44,23 @@ public abstract class CustomEnchantment {
      * @param naturalItems the names of items that can normally have this enchantment
      */
     public CustomEnchantment(String name, String[] naturalItems) {
+        this(name, naturalItems, 5);
+    }
+
+    /**
+     * Creates a new custom enchantment with the given name that can
+     * be enchanted onto the items using an enchantment table with names
+     * given in the array. The chance of this enchantment occurring is
+     * based on the weight (generally between 1 and 10, 1 being the most rare)
+     *
+     * @param name         the unique name of the enchantment
+     * @param naturalItems the names of items that can normally have this enchantment
+     * @param weight       the weight of the enchantment
+     */
+    public CustomEnchantment(String name, String[] naturalItems, int weight) {
         this.enchantName = name;
         this.naturalItems = naturalItems;
+        this.weight = weight;
     }
 
     /**

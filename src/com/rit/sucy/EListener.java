@@ -8,6 +8,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
+import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -209,14 +210,21 @@ class EListener implements Listener {
      *
      * @param event event details
      */
-    @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler
     public void onEnchant(EnchantItemEvent event) {
-        ItemStack item = event.getItem();
-        for (CustomEnchantment enchantment : EnchantmentAPI.getEnchantments()) {
-            if (enchantment.canEnchantOnto(item)) {
-                int enchantLevel = enchantment.getEnchantmentLevel(event.getExpLevelCost());
-                if (enchantLevel > 0) enchantment.addToItem(item, enchantLevel);
-            }
+        event.setCancelled(true);
+        if (EnchantmentAPI.getEnchantments(event.getItem()).size() > 0) return;
+        if (event.getEnchanter().getLevel() < event.getExpLevelCost()) return;
+
+        event.getInventory().clear();
+        event.getInventory().addItem(EEnchantTable.enchant(event.getItem(), event.getExpLevelCost(), event));
+        event.getEnchanter().setLevel(event.getEnchanter().getLevel() - event.getExpLevelCost());
+    }
+
+    @EventHandler
+    public void onPrepareEnchant(PrepareItemEnchantEvent event) {
+        if (EnchantmentAPI.getEnchantments(event.getItem()).size() > 0) {
+            event.setCancelled(true);
         }
     }
 
