@@ -1,6 +1,5 @@
 package com.rit.sucy;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.entity.LivingEntity;
@@ -8,6 +7,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -73,10 +73,10 @@ public abstract class CustomEnchantment {
     }
 
     /**
-     * Retrieves the level of enchantment depending on the modified exp level (max 49)
+     * Retrieves the level of enchantment depending on the modified exp level
      *
      * @param  expLevel the experience level the player used (between 1 and 49)
-     * @return          returns the enchantment level; returns < 1 if the enchantment should not be applied
+     * @return          returns the enchantment level
      */
     public int getEnchantmentLevel(int expLevel) {
         return 1;
@@ -89,6 +89,7 @@ public abstract class CustomEnchantment {
      * @return      true if the enchantment can be normally applied, false otherwise
      */
     public boolean canEnchantOnto(ItemStack item) {
+        if (naturalItems == null || item == null) return false;
         for (String validItem : naturalItems) {
             if (item.getType().name().equalsIgnoreCase(validItem)) return true;
         }
@@ -134,6 +135,8 @@ public abstract class CustomEnchantment {
         // Add the enchantment
         metaLore.add(0, ChatColor.GRAY + enchantName + " " + ERomanNumeral.numeralOf(enchantLevel));
         meta.setLore(metaLore);
+        String name = ENameParser.getEnchantedName(item);
+        if (name != null) meta.setDisplayName(name);
         item.setItemMeta(meta);
         return item;
     }
@@ -223,4 +226,13 @@ public abstract class CustomEnchantment {
      * @param enchantLevel the level of enchantment
      */
     public void applyUnequipEffect(Player player, int enchantLevel) {}
+
+    /**
+     * Applies effects when the player interacts with an entity
+     *
+     * @param player       player with the enchantment
+     * @param enchantLevel enchantment level
+     * @param event        the event details
+     */
+    public void applyEntityEffect(Player player, int enchantLevel, PlayerInteractEntityEvent event) {}
 }

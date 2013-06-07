@@ -1,5 +1,7 @@
 package com.rit.sucy;
 
+import org.bukkit.GameMode;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -13,10 +15,7 @@ import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerItemBreakEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -52,14 +51,15 @@ class EListener implements Listener {
     public void onHit(EntityDamageByEntityEvent event) {
 
         // Rule out cases where enchantments don't apply
+        Entity damager = event.getDamager();
+        if (damager instanceof Projectile) damager = ((Projectile) damager).getShooter();
         if (event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK) return;
-        if (!(event.getDamager() instanceof LivingEntity)) return;
+        if (!(damager instanceof LivingEntity)) return;
         if (!(event.getEntity() instanceof LivingEntity)) return;
 
         // Apply enchantments
-        LivingEntity damager = (LivingEntity)event.getDamager();
-        for (Map.Entry<CustomEnchantment, Integer> entry : getValidEnchantments(getItems(damager)).entrySet()) {
-            entry.getKey().applyEffect(damager, (LivingEntity)event.getEntity(), entry.getValue(), event);
+        for (Map.Entry<CustomEnchantment, Integer> entry : getValidEnchantments(getItems((LivingEntity)damager)).entrySet()) {
+            entry.getKey().applyEffect((LivingEntity)damager, (LivingEntity)event.getEntity(), entry.getValue(), event);
         }
     }
 
@@ -166,6 +166,18 @@ class EListener implements Listener {
     }
 
     /**
+     * Event for entity interaction effects
+     *
+     * @param event the event details
+     */
+    @EventHandler (priority = EventPriority.MONITOR)
+    public void onInteract(PlayerInteractEntityEvent event) {
+        for (Map.Entry<CustomEnchantment, Integer> entry : getValidEnchantments(getItems(event.getPlayer())).entrySet()) {
+            entry.getKey().applyEntityEffect(event.getPlayer(), entry.getValue(), event);
+        }
+    }
+
+    /**
      * Event for Equip and Unequip effects
      *
      * @param event event details
@@ -214,11 +226,13 @@ class EListener implements Listener {
     public void onEnchant(EnchantItemEvent event) {
         event.setCancelled(true);
         if (EnchantmentAPI.getEnchantments(event.getItem()).size() > 0) return;
-        if (event.getEnchanter().getLevel() < event.getExpLevelCost()) return;
+        if (event.getEnchanter().getLevel() < event.getExpLevelCost()
+                && event.getEnchanter().getGameMode() != GameMode.CREATIVE) return;
 
         event.getInventory().clear();
         event.getInventory().addItem(EEnchantTable.enchant(event.getItem(), event.getExpLevelCost(), event));
-        event.getEnchanter().setLevel(event.getEnchanter().getLevel() - event.getExpLevelCost());
+        if (event.getEnchanter().getGameMode() != GameMode.CREATIVE)
+            event.getEnchanter().setLevel(event.getEnchanter().getLevel() - event.getExpLevelCost());
     }
 
     /**
@@ -226,10 +240,11 @@ class EListener implements Listener {
      *
      * @param event event details
      */
-    @EventHandler
+    @EventHandler (priority = EventPriority.HIGHEST)
     public void onPrepareEnchant(PrepareItemEnchantEvent event) {
         if (EnchantmentAPI.getEnchantments(event.getItem()).size() > 0) {
             event.setCancelled(true);
+            return;
         }
     }
 

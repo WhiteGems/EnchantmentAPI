@@ -18,6 +18,11 @@ class EEnchantTable {
     static final int[] WEIGHTS = new int[] { 10, 5, 5, 5, 2, 2, 2, 1, 10, 5, 5, 5, 2, 2, 10, 5, 2, 1, 10, 2, 2, 1 };
 
     /**
+     * Maximum tries before the enchantment stops adding enchantments
+     */
+    static final int MAX_TRIES = 10;
+
+    /**
      * Vanilla enchantments
      */
     static final Enchantment[] ENCHANTS = new Enchantment[] { Enchantment.PROTECTION_ENVIRONMENTAL,
@@ -67,6 +72,7 @@ class EEnchantTable {
 
             // Choose an enchantment
             Object enchant = null;
+            int tries = 0;
             do {
                 double roll = Math.random() * totalWeight;
                 int count = 0;
@@ -84,7 +90,7 @@ class EEnchantTable {
                 if (enchant == null) {
                     for (int i = 0; i < WEIGHTS.length; i++) {
                         boolean valid = false;
-                        if (ENCHANTS[i].canEnchantItem(item)) valid = true;
+                        if (ENCHANTS[i].canEnchantItem(item) || item.getType() == Material.BOOK) valid = true;
                         if (valid) {
                             count += WEIGHTS[i];
                             if (count > roll) {
@@ -95,8 +101,11 @@ class EEnchantTable {
                         }
                     }
                 }
+                tries++;
             }
-            while(!validEnchant(enchant, enchants));
+            while(!validEnchant(enchant, enchants) && tries < MAX_TRIES);
+
+            if (!validEnchant(enchant, enchants)) break;
 
             // Add the enchantment to the list
             enchants.add(enchant);
@@ -112,8 +121,9 @@ class EEnchantTable {
 
         // Apply the enchantments
         for (Object o : enchants) {
-            if (o instanceof Enchantment) item.addEnchantment((Enchantment)o, levels.get(enchants.indexOf(o)));
-            else ((CustomEnchantment)o).addToItem(item, levels.get(enchants.indexOf(o)));
+            if (o == null) return item;
+            else if (o instanceof Enchantment) item.addUnsafeEnchantment((Enchantment)o, levels.get(enchants.indexOf(o)));
+            else if (o instanceof CustomEnchantment) ((CustomEnchantment)o).addToItem(item, levels.get(enchants.indexOf(o)));
         }
 
         return item;
@@ -234,7 +244,7 @@ class EEnchantTable {
     static int vanillaWeight(ItemStack item) {
         int count = 0;
         for (int i = 0; i < WEIGHTS.length; i++) {
-            if (!ENCHANTS[i].canEnchantItem(item)) continue;
+            if (!ENCHANTS[i].canEnchantItem(item) && item.getType() != Material.BOOK) continue;
             count += WEIGHTS[i];
         }
         return count;
