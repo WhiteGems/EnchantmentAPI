@@ -3,6 +3,7 @@ package com.rit.sucy;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -185,6 +186,8 @@ class EListener implements Listener {
     @EventHandler (priority =  EventPriority.MONITOR, ignoreCancelled = true)
     public void onEquip(InventoryClickEvent event) {
         new EEquip(plugin.getServer().getPlayer(event.getWhoClicked().getName())).runTaskLater(plugin, 1);
+        if (event.getInventory().getHolder() instanceof Player)
+            new EEquip((Player)event.getInventory().getHolder()).runTaskLater(plugin, 1);
     }
 
     /**
