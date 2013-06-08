@@ -4,6 +4,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
@@ -46,6 +47,7 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
         // Listeners
         new EListener(this);
         getCommand("enchantlist").setExecutor(this);
+        saveDefaultConfig();
         reloadConfig();
 
         // Load enchantment IDS
@@ -179,18 +181,9 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
      */
     public static Map<CustomEnchantment, Integer> getEnchantments(ItemStack item) {
         HashMap<CustomEnchantment, Integer> list = new HashMap<CustomEnchantment, Integer>();
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) return list;
-        if (!meta.hasLore()) return list;
-        for (String lore : meta.getLore()) {
-            String name = ENameParser.parseName(lore);
-            int level = ENameParser.parseLevel(lore);
-            if (name == null) continue;
-            if (level == 0) continue;
-            if (EnchantmentAPI.isRegistered(name)) {
-                list.put(EnchantmentAPI.getEnchantment(name), level);
-            }
-        }
+        for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet())
+            if (entry.getKey() instanceof CustomEnchantment)
+                list.put((CustomEnchantment)entry.getKey(), entry.getValue());
         return list;
     }
 
@@ -202,14 +195,8 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
      * @return                true if it has the enchantment, false otherwise
      */
     public static boolean itemHasEnchantment(ItemStack item, String enchantmentName) {
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) return false;
-        if (!meta.hasLore()) return false;
-        for (String lore : meta.getLore()) {
-            if (lore.contains(enchantmentName) && ENameParser.parseLevel(lore) > 0)
-                return true;
-        }
-        return false;
+        CustomEnchantment enchantment = getEnchantment(enchantmentName);
+        return item.containsEnchantment(enchantment);
     }
 
     /**
@@ -219,15 +206,19 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
      * @return     the item without enchantments
      */
     public static ItemStack removeEnchantments(ItemStack item) {
+
+        // TODO add packet alternative
+
         ItemMeta meta = item.getItemMeta();
-        if (meta == null) return item;
-        if (!meta.hasLore()) return item;
-        List<String> lore = meta.getLore();
-        for (Map.Entry<CustomEnchantment, Integer> entry : getEnchantments(item).entrySet()) {
-            lore.remove(ChatColor.GRAY + entry.getKey().name() + " " + ERomanNumeral.numeralOf(entry.getValue()));
+        for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
+            if (entry.getKey() instanceof CustomEnchantment) {
+                meta.getLore().remove(ChatColor.GRAY + ((CustomEnchantment) entry.getKey()).enchantName
+                        + " " + ERomanNumeral.numeralOf(entry.getValue()));
+            }
         }
-        meta.setLore(lore);
         item.setItemMeta(meta);
+
+
         return item;
     }
 

@@ -151,28 +151,18 @@ public abstract class CustomEnchantment extends Enchantment {
      * @return     the item without this enchantment
      */
     public ItemStack removeFromItem(ItemStack item) {
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null) return item;
-        if (!meta.hasLore()) return item;
-        List<String> metaLore = meta.getLore();
 
-        // Make sure the enchantment doesn't already exist on the item
-        for (String lore : metaLore) {
-            if (lore.contains(enchantName)) {
+        if (item.containsEnchantment(this)) {
+            int level = item.getEnchantmentLevel(this);
+            item.removeEnchantment(this);
 
-                // Confirm that the enchanting name is the same
-                String loreName = ENameParser.parseName(lore);
-                if (loreName == null) continue;
-                if (!enchantName.equalsIgnoreCase(loreName)) continue;
+            // TODO add packet alternative
 
-                // Compare the enchantment levels
-                List<String> newLore = meta.getLore();
-                newLore.remove(lore);
-                meta.setLore(newLore);
-                item.setItemMeta(meta);
-                return item;
-            }
+            ItemMeta meta = item.getItemMeta();
+            meta.getLore().remove(ChatColor.GRAY + enchantName + " " + ERomanNumeral.numeralOf(level));
+            item.setItemMeta(meta);
         }
+
         return item;
     }
 

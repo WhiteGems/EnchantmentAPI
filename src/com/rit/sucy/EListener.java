@@ -260,18 +260,8 @@ class EListener implements Listener {
     private Map<CustomEnchantment, Integer> getValidEnchantments(ArrayList<ItemStack> items) {
         Map<CustomEnchantment, Integer> validEnchantments = new HashMap<CustomEnchantment, Integer>();
         for (ItemStack item : items) {
-            ItemMeta meta = item.getItemMeta();
-            if (meta == null) continue;
-            if (!meta.hasLore()) continue;
-            for (String lore : meta.getLore()) {
-                String name = ENameParser.parseName(lore);
-                int level = ENameParser.parseLevel(lore);
-                if (name == null) continue;
-                if (level == 0) continue;
-                if (EnchantmentAPI.isRegistered(name)) {
-                    validEnchantments.put(EnchantmentAPI.getEnchantment(name), level);
-                }
-            }
+            for (Map.Entry<CustomEnchantment, Integer> entry : EnchantmentAPI.getEnchantments(item).entrySet())
+                validEnchantments.put(entry.getKey(), entry.getValue());
         }
         return validEnchantments;
     }
