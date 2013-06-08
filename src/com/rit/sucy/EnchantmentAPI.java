@@ -27,6 +27,16 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
     private static Hashtable<String, CustomEnchantment> enchantments = new Hashtable<String, CustomEnchantment>();
 
     /**
+     * A table of IDs set for each enchantment
+     */
+    private static Hashtable<String, Integer> ids = new Hashtable<String, Integer>();
+
+    /**
+     * ID for the next new enchantment
+     */
+    private static int ENCHANT_ID = 100;
+
+    /**
      * Enables the plugin and calls for all custom enchantments from any plugins
      * that extend the EnchantPlugin class
      */
@@ -36,6 +46,12 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
         // Listeners
         new EListener(this);
         getCommand("enchantlist").setExecutor(this);
+        reloadConfig();
+
+        // Load enchantment IDS
+        for (String key : getConfig().getKeys(false)) {
+            ids.put(key, getConfig().getInt(key));
+        }
 
         // Get custom enchantments from other plugins
         for (Plugin plugin : getServer().getPluginManager().getPlugins()) {
@@ -51,9 +67,13 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
      */
     @Override
     public void onDisable() {
+        for (Map.Entry<String, Integer> entry : ids.entrySet())
+            getConfig().set(entry.getKey(), entry.getValue());
         HandlerList.unregisterAll(this);
         enchantments.clear();
+        ids.clear();
         EEquip.clear();
+        saveConfig();
     }
 
     /**
@@ -114,6 +134,17 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
     }
 
     /**
+     * Retrieves the unique ID for an enchantment
+     *
+     * @param enchantName name of the enchantment
+     * @return            unique enchantment ID
+     */
+    public static int getEnchantID(String enchantName) {
+        if (!ids.containsKey(enchantName)) ids.put(enchantName, ENCHANT_ID++);
+        return ids.get(enchantName);
+    }
+
+    /**
      * Registers the given custom enchantment for the plugin
      *
      * @param  enchantment the enchantment to register
@@ -121,6 +152,7 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
      */
     public static boolean registerCustomEnchantment(CustomEnchantment enchantment) {
         if (enchantments.containsKey(enchantment.enchantName.toUpperCase())) return false;
+        if (!ids.containsKey(enchantment.enchantName)) ids.put(enchantment.enchantName, ENCHANT_ID++);
         enchantments.put(enchantment.enchantName.toUpperCase(), enchantment);
         return true;
     }

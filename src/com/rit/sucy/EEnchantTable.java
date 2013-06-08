@@ -122,8 +122,8 @@ class EEnchantTable {
         // Apply the enchantments
         for (Object o : enchants) {
             if (o == null) return item;
-            else if (o instanceof Enchantment) item.addUnsafeEnchantment((Enchantment)o, levels.get(enchants.indexOf(o)));
             else if (o instanceof CustomEnchantment) ((CustomEnchantment)o).addToItem(item, levels.get(enchants.indexOf(o)));
+            else if (o instanceof Enchantment) item.addUnsafeEnchantment((Enchantment)o, levels.get(enchants.indexOf(o)));
         }
 
         return item;

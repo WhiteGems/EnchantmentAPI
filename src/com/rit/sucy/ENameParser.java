@@ -42,12 +42,14 @@ class ENameParser {
         return ERomanNumeral.getValueOf(pieces[pieces.length - 1]);
     }
 
+
     /**
      * Gets the vanilla name of the item
      *
      * @param item item to get the name of
      * @return     normal display name
      */
+    /*
     public static String getEnchantedName(ItemStack item) {
         if (item.hasItemMeta()) {
             if (item.getItemMeta().hasEnchants()) return null;
@@ -65,4 +67,5 @@ class ENameParser {
         }
         return name;
     }
+    */
 }
