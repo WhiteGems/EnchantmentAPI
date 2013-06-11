@@ -44,6 +44,7 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
         // Listeners
         new EListener(this);
         getCommand("enchantlist").setExecutor(this);
+        getCommand("addenchant").setExecutor(this);
 
         // Get custom enchantments from other plugins
         for (Plugin plugin : getServer().getPluginManager().getPlugins()) {
@@ -89,14 +90,44 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
      * @return       true
      */
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        String message = "Registered enchantments: ";
-        if (enchantments.size() > 0) {
-            for (CustomEnchantment enchantment : enchantments.values())
-                if (!(enchantment instanceof VanillaEnchantment))
-                    message += enchantment.name() + ", ";
-            message = message.substring(0, message.length() - 2);
+        if (cmd.getName().equalsIgnoreCase("enchantList")) {
+            String message = "Registered enchantments: ";
+            if (enchantments.size() > 0) {
+                for (CustomEnchantment enchantment : enchantments.values())
+                    if (!(enchantment instanceof VanillaEnchantment))
+                        message += enchantment.name() + ", ";
+                message = message.substring(0, message.length() - 2);
+            }
+            sender.sendMessage(message);
         }
-        sender.sendMessage(message);
+        else if (sender instanceof Player) {
+            if (args.length == 0)
+                sender.sendMessage(ChatColor.DARK_RED + "Invalid number of arguments: expected at least 1");
+            else {
+                String name = args[0];
+                int difference = 0;
+                int level = 1;
+                try {
+                    level = Integer.parseInt(args[args.length - 1]);
+                    difference = 1;
+                }
+                catch (Exception e) {
+                    // Level is not provided
+                }
+
+                for (int i = 1; i < args.length - difference; i++) name += " " + args[i];
+                Player player = (Player)sender;
+                CustomEnchantment enchantment = getEnchantment(name);
+                if (enchantment == null) {
+                    sender.sendMessage(ChatColor.DARK_RED + name + " is not a registered enchantment!");
+                }
+                else {
+                    player.setItemInHand(enchantment.addToItem(player.getItemInHand(), level));
+                    player.sendMessage(ChatColor.GREEN + "Enchantment has been applied.");
+                }
+            }
+        }
+        else sender.sendMessage(ChatColor.DARK_RED + "That is a player-only command!");
         return true;
     }
 
