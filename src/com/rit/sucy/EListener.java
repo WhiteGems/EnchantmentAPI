@@ -1,6 +1,7 @@
 package com.rit.sucy;
 
 import org.bukkit.GameMode;
+import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -16,6 +17,7 @@ import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -251,6 +253,22 @@ class EListener implements Listener {
         }
     }
 
+    /*
+    @EventHandler (priority = EventPriority.LOWEST)
+    public void onAnvil(InventoryClickEvent event) {
+        if (event.getInventory().getType() == InventoryType.ANVIL) {
+            Player player = plugin.getServer().getPlayer(event.getWhoClicked().getName());
+            boolean top = event.getRawSlot() < event.getView().getTopInventory().getSize();
+            if (top) {
+                if (!event.isRightClick() && event.getSlot() == 2 && event.getCurrentItem().getType() != Material.AIR) {
+                    player.sendMessage("Done");
+                }
+            }
+            new EAnvilTask(event.getView().getTopInventory()).runTaskLater(plugin, 1);
+        }
+    }
+    */
+
     /**
      * Gets a list of valid enchantments from a set of items
      *
@@ -260,8 +278,18 @@ class EListener implements Listener {
     private Map<CustomEnchantment, Integer> getValidEnchantments(ArrayList<ItemStack> items) {
         Map<CustomEnchantment, Integer> validEnchantments = new HashMap<CustomEnchantment, Integer>();
         for (ItemStack item : items) {
-            for (Map.Entry<CustomEnchantment, Integer> entry : EnchantmentAPI.getEnchantments(item).entrySet())
-                validEnchantments.put(entry.getKey(), entry.getValue());
+            ItemMeta meta = item.getItemMeta();
+            if (meta == null) continue;
+            if (!meta.hasLore()) continue;
+            for (String lore : meta.getLore()) {
+                String name = ENameParser.parseName(lore);
+                int level = ENameParser.parseLevel(lore);
+                if (name == null) continue;
+                if (level == 0) continue;
+                if (EnchantmentAPI.isRegistered(name)) {
+                    validEnchantments.put(EnchantmentAPI.getEnchantment(name), level);
+                }
+            }
         }
         return validEnchantments;
     }

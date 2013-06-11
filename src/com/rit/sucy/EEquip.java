@@ -2,10 +2,10 @@ package com.rit.sucy;
 
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Hashtable;
-import java.util.Map;
 
 /**
  * Handles keeping track of player equipment for Equip and Unequip enchantment effects
@@ -77,8 +77,18 @@ class EEquip extends BukkitRunnable {
      * @param item the equipment that was just equipped
      */
     private void doEquip(ItemStack item) {
-        for (Map.Entry<CustomEnchantment, Integer> enchantment : EnchantmentAPI.getEnchantments(item).entrySet())
-            enchantment.getKey().applyEquipEffect(player, enchantment.getValue());
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        if (!meta.hasLore()) return;
+        for (String lore : meta.getLore()) {
+            String name = ENameParser.parseName(lore);
+            int level = ENameParser.parseLevel(lore);
+            if (name == null) continue;
+            if (level == 0) continue;
+            if (EnchantmentAPI.isRegistered(name)) {
+                EnchantmentAPI.getEnchantment(name).applyEquipEffect(player, level);
+            }
+        }
     }
 
     /**
@@ -87,7 +97,17 @@ class EEquip extends BukkitRunnable {
      * @param item the equipment that was just equipped
      */
     private void doUnequip(ItemStack item) {
-        for (Map.Entry<CustomEnchantment, Integer> enchantment : EnchantmentAPI.getEnchantments(item).entrySet())
-            enchantment.getKey().applyUnequipEffect(player, enchantment.getValue());
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return;
+        if (!meta.hasLore()) return;
+        for (String lore : meta.getLore()) {
+            String name = ENameParser.parseName(lore);
+            int level = ENameParser.parseLevel(lore);
+            if (name == null) continue;
+            if (level == 0) continue;
+            if (EnchantmentAPI.isRegistered(name)) {
+                EnchantmentAPI.getEnchantment(name).applyUnequipEffect(player, level);
+            }
+        }
     }
 }

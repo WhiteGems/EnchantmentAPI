@@ -1,10 +1,7 @@
 package com.rit.sucy;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
-import org.bukkit.enchantments.Enchantment;
-import org.bukkit.enchantments.EnchantmentTarget;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockEvent;
@@ -17,12 +14,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Base class for custom enchantments
  */
-public abstract class CustomEnchantment extends Enchantment {
+public abstract class CustomEnchantment {
 
     /**
      * Name of the enchantment
@@ -62,7 +58,6 @@ public abstract class CustomEnchantment extends Enchantment {
      * @param weight       the weight of the enchantment
      */
     public CustomEnchantment(String name, String[] naturalItems, int weight) {
-        super(EnchantmentAPI.getEnchantID(name));
         this.enchantName = name;
         this.naturalItems = naturalItems;
         this.weight = weight;
@@ -109,37 +104,40 @@ public abstract class CustomEnchantment extends Enchantment {
      * @return              the enchanted item
      */
     public ItemStack addToItem(ItemStack item, int enchantLevel) {
+        ItemMeta meta = item.getItemMeta();
+        List<String> metaLore = meta.getLore() == null ? new ArrayList<String>() : meta.getLore();
 
         // Make sure the enchantment doesn't already exist on the item
-        if (item.containsEnchantment(this)) {
-            for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
-                if (entry.getKey().getId() == this.getId()){
-                    if (entry.getValue() < enchantLevel) {
-                        item.removeEnchantment(entry.getKey());
-                        break;
-                    }
-                    else return item;
-                }
+        for (String lore : metaLore) {
+            if (lore.contains(enchantName)) {
+
+                // Confirm that the enchanting name is the same
+                String loreName = ENameParser.parseName(lore);
+                if (loreName == null) continue;
+                if (!enchantName.equalsIgnoreCase(loreName)) continue;
+
+                // Compare the enchantment levels
+                String[] pieces = lore.split(" ");
+                int level = ERomanNumeral.getValueOf(pieces[pieces.length - 1]);
+                if (level == 0) continue;
+
+                // Leave higher enchantments alone
+                if (level >= enchantLevel) return item;
+
+                // Replace lower enchantments
+                List<String> newLore = meta.getLore();
+                newLore.remove(lore);
+                meta.setLore(newLore);
+                break;
             }
         }
 
         // Add the enchantment
-
-        // TODO add option for packets
-        // if (!packets) {
-            ItemMeta meta = item.getItemMeta();
-            List<String> metaLore = meta.getLore() == null ? new ArrayList<String>() : meta.getLore();
-            metaLore.add(0, ChatColor.GRAY + enchantName + " " + ERomanNumeral.numeralOf(enchantLevel));
-            meta.setLore(metaLore);
-            //String name = ENameParser.getEnchantedName(item);
-            item.setItemMeta(meta);
-            Bukkit.broadcastMessage(enchantName);
-        // }
-        // else {
-        //     TODO add packet initialization
-        // }
-
-        item.addUnsafeEnchantment(this, enchantLevel);
+        metaLore.add(0, ChatColor.GRAY + enchantName + " " + ERomanNumeral.numeralOf(enchantLevel));
+        meta.setLore(metaLore);
+        if (!meta.hasDisplayName())
+            meta.setDisplayName(ENameParser.getEnchantedName(item));
+        item.setItemMeta(meta);
 
         return item;
     }
@@ -151,18 +149,32 @@ public abstract class CustomEnchantment extends Enchantment {
      * @return     the item without this enchantment
      */
     public ItemStack removeFromItem(ItemStack item) {
-
-        if (item.containsEnchantment(this)) {
-            int level = item.getEnchantmentLevel(this);
-            item.removeEnchantment(this);
-
-            // TODO add packet alternative
-
-            ItemMeta meta = item.getItemMeta();
-            meta.getLore().remove(ChatColor.GRAY + enchantName + " " + ERomanNumeral.numeralOf(level));
-            item.setItemMeta(meta);
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null) return item;
+        if (!meta.hasLore()) return item;
+        if (meta.hasDisplayName()) {
+            if (meta.getDisplayName().equals(ENameParser.getEnchantedName(item)))
+                meta.setDisplayName(null);
         }
+        List<String> metaLore = meta.getLore();
 
+        // Make sure the enchantment doesn't already exist on the item
+        for (String lore : metaLore) {
+            if (lore.contains(enchantName)) {
+
+                // Confirm that the enchanting name is the same
+                String loreName = ENameParser.parseName(lore);
+                if (loreName == null) continue;
+                if (!enchantName.equalsIgnoreCase(loreName)) continue;
+
+                // Compare the enchantment levels
+                List<String> newLore = meta.getLore();
+                newLore.remove(lore);
+                meta.setLore(newLore);
+                item.setItemMeta(meta);
+                return item;
+            }
+        }
         return item;
     }
 
@@ -228,61 +240,4 @@ public abstract class CustomEnchantment extends Enchantment {
      * @param event        the event details
      */
     public void applyEntityEffect(Player player, int enchantLevel, PlayerInteractEntityEvent event) {}
-
-    /**
-     * @return enchantment name
-     */
-    @Override
-    public String getName() {
-        return enchantName;
-    }
-
-    /**
-     * @return maximum level of the enchantment
-     */
-    @Override
-    public int getMaxLevel() {
-        return getEnchantmentLevel(49);
-    }
-
-    /**
-     * @return minimum exp level to get this enchantment
-     */
-    @Override
-    public int getStartLevel() {
-        return 1;
-    }
-
-    /**
-     * @return gets the item set this enchantment can enchant onto
-     */
-    @Override
-    public EnchantmentTarget getItemTarget() {
-        return EnchantmentTarget.ALL;
-    }
-
-    /**
-     * Checks if this enchantment conflicts with another enchantment
-     *
-     * @param enchantment enchantment to check against
-     * @return            false
-     */
-    @Override
-    public boolean conflictsWith(Enchantment enchantment) {
-        return false;
-    }
-
-    /**
-     * Checks if this enchantment can enchant onto the specific item
-     *
-     * @param itemStack item to check
-     * @return          true if can enchant, false otherwise
-     */
-    @Override
-    public boolean canEnchantItem(ItemStack itemStack) {
-        for (String item : naturalItems)
-            if (itemStack.getType().name().equalsIgnoreCase(item))
-                return true;
-        return false;
-    }
 }
