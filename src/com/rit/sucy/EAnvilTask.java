@@ -10,7 +10,8 @@ import java.util.Map;
  * Used to create custom outputs for the anvil
  * (currently not functioning properly)
  */
-class EAnvilTask extends BukkitRunnable {
+/*
+public class EAnvilTask extends BukkitRunnable {
 
     Inventory anvil;
 
@@ -34,8 +35,9 @@ class EAnvilTask extends BukkitRunnable {
                     enchant.getKey().addToItem(item, enchant.getValue());
                 for (Map.Entry<CustomEnchantment, Integer> enchant : enchants2.entrySet())
                     enchant.getKey().addToItem(item, enchant.getValue());
-                anvil.setItem(1, item);
+                anvil.setItem(2, item);
             }
         }
     }
 }
+*/

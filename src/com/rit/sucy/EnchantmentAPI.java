@@ -4,6 +4,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
@@ -27,11 +28,18 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
     private static Hashtable<String, CustomEnchantment> enchantments = new Hashtable<String, CustomEnchantment>();
 
     /**
+     * Singleton instance of the API
+     */
+    private static EnchantmentAPI instance;
+
+    /**
      * Enables the plugin and calls for all custom enchantments from any plugins
      * that extend the EnchantPlugin class
      */
     @Override
     public void onEnable(){
+
+        instance = this;
 
         // Listeners
         new EListener(this);
@@ -44,6 +52,9 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
         for (Player player : getServer().getOnlinePlayers()) {
             EEquip.loadPlayer(player);
         }
+
+        loadVanillaEnchantments();
+        saveConfig();
     }
 
     /**
@@ -54,6 +65,18 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
         HandlerList.unregisterAll(this);
         enchantments.clear();
         EEquip.clear();
+    }
+
+    /**
+     * Will load Vanilla Enchantments as CustomEnchantments
+     * Idea: Plugins modifying the probability of vanilla enchants
+     */
+    private void loadVanillaEnchantments(){
+        for (VanillaData defaults : VanillaData.values())
+        {
+            VanillaEnchantment vanilla = new VanillaEnchantment(defaults.getEnchantment(), defaults.getEnchantWeight(), defaults.getLevels(), defaults.name());
+            registerCustomEnchantment(vanilla);
+        }
     }
 
     /**
@@ -68,7 +91,9 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         String message = "Registered enchantments: ";
         if (enchantments.size() > 0) {
-            for (CustomEnchantment enchantment : enchantments.values()) message += enchantment.name() + ", ";
+            for (CustomEnchantment enchantment : enchantments.values())
+                if (!(enchantment instanceof VanillaEnchantment))
+                    message += enchantment.name() + ", ";
             message = message.substring(0, message.length() - 2);
         }
         sender.sendMessage(message);
@@ -120,8 +145,9 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
      * @return             true if it was registered, false otherwise
      */
     public static boolean registerCustomEnchantment(CustomEnchantment enchantment) {
-        if (enchantments.containsKey(enchantment.enchantName.toUpperCase())) return false;
-        enchantments.put(enchantment.enchantName.toUpperCase(), enchantment);
+        if (enchantments.containsKey(enchantment.name().toUpperCase())) return false;
+        if (!enchantment.isEnabled()) return false;
+        enchantments.put(enchantment.name().toUpperCase(), enchantment);
         return true;
     }
 
@@ -197,6 +223,15 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
         meta.setLore(lore);
         item.setItemMeta(meta);
         return item;
+    }
+
+    /**
+     * Gets the config file
+     *
+     * @return config file
+     */
+    static FileConfiguration config() {
+        return instance.getConfig();
     }
 
     // Does nothing when run as .jar

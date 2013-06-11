@@ -1,19 +1,39 @@
 package com.rit.sucy;
 
+import org.apache.commons.lang.Validate;
+
 /**
  * Handles conversions between Roman Numeral Strings and integers
  */
 class ERomanNumeral {
 
-    /**
-     * Roman Numeral characters
-     */
-    static final char[] numerals = new char[] {  'M', 'D', 'C', 'L', 'X', 'V', 'I' };
+    private enum RomanNumber
+    {
+        //It is important that the order is in reverse
+        M (1000), D (500), C (100), L (50), X (10), V (5), I (1);
 
-    /**
-     * Roman Numeral values
-     */
-    static final short[] values = new short[] { 1000, 500, 100,  50,  10,   5,   1 };
+        private final int valueInDec;
+
+        /**
+         * Maps the RomanNumbers to decimal equivalents
+         *
+         * @param decimal value which represents the roman number
+         */
+        private RomanNumber(int decimal)
+        {
+            this.valueInDec = decimal;
+        }
+
+        /**
+         * Return the decimal representation
+         *
+         * @return decimal of the roman number
+         */
+        public int getInDecimal ()
+        {
+            return valueInDec;
+        }
+    }
 
     /**
      * Gets the Roman Numeral string representing the given value
@@ -22,25 +42,33 @@ class ERomanNumeral {
      * @return      Roman Numeral String
      */
     static String numeralOf(int value) {
-        String numeralString = "";
-        for (int i = 0; i < numerals.length; i++) {
+        Validate.isTrue(value > 0, "Roman numbers can't express zero or negative numbers!");
+
+        StringBuilder builder = new StringBuilder();
+        RomanNumber[] romanNumbers = RomanNumber.values();
+
+        for (int i = 0; i < romanNumbers.length; i++){
+            RomanNumber romanNumber = romanNumbers[i];
 
             // Regular values
-            while (value >= values[i]) {
-                value -= values[i];
-                numeralString += numerals[i];
+            while (value >= romanNumber.getInDecimal()) {
+                value -= romanNumber.getInDecimal();
+                builder.append(romanNumber.name());
             }
 
             // Subtraction values
-            if (i < numerals.length - 1) {
+            if (i < romanNumbers.length - 1) {
                 int index = i - i % 2 + 2;
-                if (value >= values[i] - values[index]) {
-                    value -= values[i] - values[index];
-                    numeralString += numerals[index] + "" + numerals[i];
+                RomanNumber subtractNum = romanNumbers[index];
+
+                if (value >= romanNumber.getInDecimal() - subtractNum.getInDecimal()) {
+                    value -= romanNumber.getInDecimal() - subtractNum.getInDecimal();
+                    builder.append(subtractNum.name());
+                    builder.append(romanNumber.name());
                 }
             }
         }
-        return numeralString;
+        return builder.toString();
     }
 
     /**
@@ -71,9 +99,13 @@ class ERomanNumeral {
      * @return        value of the character
      */
     static int getNumeralValue(char numeral) {
-        for (int i = 0; i < numerals.length; i++) {
-            if (numerals[i] == numeral) return values[i];
+        String romanNumeral = ("" + numeral).toUpperCase();
+        try {
+            RomanNumber romanNumber = RomanNumber.valueOf(romanNumeral);
+            return romanNumber.getInDecimal();
         }
-        return 0;
+        catch (IllegalArgumentException e) {
+            return 0;
+        }
     }
 }

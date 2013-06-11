@@ -5,42 +5,17 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * Handles selecting enchantments when enchanting items
  */
-class EEnchantTable {
-
-    /**
-     * Enchantment weights for vanilla enchantments
-     */
-    static final int[] WEIGHTS = new int[] { 10, 5, 5, 5, 2, 2, 2, 1, 10, 5, 5, 5, 2, 2, 10, 5, 2, 1, 10, 2, 2, 1 };
+public class EEnchantTable {
 
     /**
      * Maximum tries before the enchantment stops adding enchantments
      */
     static final int MAX_TRIES = 10;
-
-    /**
-     * Vanilla enchantments
-     */
-    static final Enchantment[] ENCHANTS = new Enchantment[] { Enchantment.PROTECTION_ENVIRONMENTAL,
-        Enchantment.PROTECTION_FALL, Enchantment.PROTECTION_FIRE, Enchantment.PROTECTION_PROJECTILE,
-        Enchantment.WATER_WORKER, Enchantment.PROTECTION_EXPLOSIONS, Enchantment.OXYGEN, Enchantment.THORNS,
-        Enchantment.DAMAGE_ALL, Enchantment.DAMAGE_ARTHROPODS, Enchantment.KNOCKBACK, Enchantment.DAMAGE_UNDEAD,
-        Enchantment.FIRE_ASPECT, Enchantment.LOOT_BONUS_MOBS, Enchantment.DIG_SPEED, Enchantment.DURABILITY,
-        Enchantment.LOOT_BONUS_BLOCKS, Enchantment.SILK_TOUCH, Enchantment.ARROW_DAMAGE, Enchantment.ARROW_FIRE,
-        Enchantment.ARROW_KNOCKBACK, Enchantment.ARROW_INFINITE };
-
-    /**
-     * Minimum levels for various tiers of vanilla enchantments
-     */
-    static final int[][] LEVELS = new int[][] {
-            {1, 15, 25, 35}, {1, 15, 20, 25}, {1, 20, 30, 35}, {1, 15, 20, 25}, {1}, {1, 15, 25, 30},
-            {1, 30, 40}, {1, 45, 65}, {1, 15, 25, 40, 50}, {1, 20, 25, 35, 50}, {1, 40}, {1, 20, 25, 35, 50},
-            {1, 50}, {1, 30, 60}, {1, 30, 40, 50, 60}, {1, 30, 40}, {1, 40, 50}, {1}, {1, 15, 25, 35, 45},
-            {1}, {1, 35}, {1}};
 
     /**
      * Enchants an item
@@ -55,61 +30,37 @@ class EEnchantTable {
         // Don't use the normal enchantments
         event.getEnchantsToAdd().clear();
 
-        // Find the total weight of all applicable enchantments
-        int totalWeight = vanillaWeight(item) + customWeight(item.getType().name());
-
         // Get a modified enchantment level (between 1 and 49)
-        enchantLevel = modifiedLevel(enchantLevel, enchantability(item.getType().name()));
+        enchantLevel = modifiedLevel(enchantLevel, MaterialClass.getEnchantabilityFor(item.getType()));
 
         boolean chooseEnchantment = true;
-        ArrayList<Object> enchants = new ArrayList<Object>();
-        ArrayList<Integer> levels = new ArrayList<Integer>();
+        //enchants added to the item
+        Map<CustomEnchantment, Integer> choosenEnchantsWithCost = new HashMap<CustomEnchantment, Integer>();
+        //Build a Map where the number of keys for a certain Enchantment corresponds to the weight
+        List<CustomEnchantment> validEnchants = getAllValidEnchants(item);
+
+        // Find the total weight of all applicable enchantments
+        int totalWeight = weightOfAllEnchants(validEnchants, item);
+
         int level = 1;
 
         // Keep choosing enchantments as long as needed
         while (chooseEnchantment) {
             chooseEnchantment = false;
 
-            // Choose an enchantment
-            Object enchant = null;
+            // Try to add an Enchantment, stop adding enchantments if the enchantment would conflict
+            CustomEnchantment enchant = null;
             int tries = 0;
             do {
-                double roll = Math.random() * totalWeight;
-                int count = 0;
-                for (CustomEnchantment c : EnchantmentAPI.getEnchantments()) {
-                    if (c.canEnchantOnto(item)) {
-                        count += c.weight;
-                        if (count > roll) {
-                            enchant = c;
-                            level = c.getEnchantmentLevel(enchantLevel);
-                            if (level < 1) level = 1;
-                            break;
-                        }
-                    }
-                }
-                if (enchant == null) {
-                    for (int i = 0; i < WEIGHTS.length; i++) {
-                        boolean valid = false;
-                        if (ENCHANTS[i].canEnchantItem(item) || item.getType() == Material.BOOK) valid = true;
-                        if (valid) {
-                            count += WEIGHTS[i];
-                            if (count > roll) {
-                                enchant = ENCHANTS[i];
-                                level = getLevel(i, enchantLevel);
-                                break;
-                            }
-                        }
-                    }
-                }
-                tries++;
-            }
-            while(!validEnchant(enchant, enchants) && tries < MAX_TRIES);
+                enchant = weightedRandom(validEnchants, item);
+                if (enchant.conflictsWith(new ArrayList<CustomEnchantment>(choosenEnchantsWithCost.keySet())))
+                    continue;
+                level = enchant.getEnchantmentLevel(enchantLevel);
 
-            if (!validEnchant(enchant, enchants)) break;
-
-            // Add the enchantment to the list
-            enchants.add(enchant);
-            levels.add(level);
+                // Add the enchantment to the list
+                choosenEnchantsWithCost.put(enchant, level);
+                break;
+            } while(tries++ < MAX_TRIES);
 
             // Reduce the chance of getting another one along with the power of the next one
             enchantLevel /= 2;
@@ -120,56 +71,23 @@ class EEnchantTable {
         }
 
         // Apply the enchantments
-        for (Object o : enchants) {
-            if (o == null) return item;
-            else if (o instanceof Enchantment) item.addUnsafeEnchantment((Enchantment)o, levels.get(enchants.indexOf(o)));
-            else if (o instanceof CustomEnchantment) ((CustomEnchantment)o).addToItem(item, levels.get(enchants.indexOf(o)));
+        for (Map.Entry<CustomEnchantment, Integer> enchantCostEntry : choosenEnchantsWithCost.entrySet()) {
+            CustomEnchantment selectedEnchant = enchantCostEntry.getKey();
+            int levelCost = enchantCostEntry.getValue();
+
+            if (selectedEnchant == null)
+                return item; //And cancel event
+            else if (selectedEnchant instanceof VanillaEnchantment)
+                item.addUnsafeEnchantment(((VanillaEnchantment)selectedEnchant).getVanillaEnchant(), levelCost);
+            else
+                selectedEnchant.addToItem(item, levelCost);
         }
 
         return item;
     }
 
     /**
-     * Gets the level of the vanilla enchantment with the given index
-     *
-     * @param index    enchantment index
-     * @param expLevel modified exp level
-     * @return         level of enchantment
-     */
-    static int getLevel(int index, int expLevel) {
-        for (int i = LEVELS[index].length - 1; i >= 0; i--) {
-            if (expLevel >= LEVELS[index][i]) return i + 1;
-        }
-        return 1;
-    }
-
-    /**
-     * Checks if an enchantment is a valid addition to the current list
-     *
-     * @param enchant  enchantment to add
-     * @param enchants current list of enchantments
-     * @return         true if valid, false otherwise
-     */
-    static boolean validEnchant(Object enchant, ArrayList<Object> enchants) {
-        if (enchants.contains(enchant)) return false;
-        else if (enchant instanceof Enchantment) {
-            Enchantment enchantment = (Enchantment)enchant;
-            for (Object o : enchants) {
-                if (o instanceof Enchantment) {
-                    Enchantment e = (Enchantment)o;
-                    if (e.getName().equalsIgnoreCase(enchantment.getName())) return false;
-                    if (e.getName().contains("PROTECTION") && enchantment.getName().contains("PROTECTION")) return false;
-                    if (e.getName().contains("SILK") && enchantment.getName().contains("LOOT")) return false;
-                    if (e.getName().contains("LOOT") && enchantment.getName().contains("SILK")) return false;
-                    if (e.getName().contains("DAMAGE") && enchantment.getName().contains("DAMAGE")) return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Calcuates a modified experience level
+     * Calculates a modified experience level
      *
      * @param expLevel       chosen exp level
      * @param enchantability the enchantibility of the item
@@ -202,51 +120,61 @@ class EEnchantTable {
     }
 
     /**
-     * Gets the enchantability of an item
+     * Get an Enchantment considering the weight (probability) of each Enchantment
      *
-     * @param itemName name of the item
-     * @return         enchantability of the item
+     * @param enchantments  possible valid enchantments
+     * @param item          to get the weights for
+     *
+     * @return              One possible CustomEnchantment
      */
-    static int enchantability(String itemName) {
-        itemName = itemName.toLowerCase();
-        if (itemName.contains("wood_")) return 15;
-        if (itemName.contains("leather_")) return 15;
-        if (itemName.contains("stone_")) return 5;
-        if (itemName.contains("iron_")) return 14;
-        if (itemName.contains("chain")) return 12;
-        if (itemName.contains("diamond_")) return 10;
-        if (itemName.contains("gold_")) return 25;
-        return 1;
+    static CustomEnchantment weightedRandom (Collection<CustomEnchantment> enchantments, ItemStack item){
+        //TODO use Item
+
+        // Compute the total weight of all items together
+        int totalWeight = weightOfAllEnchants(enchantments, item);
+
+        //select a random value between 0 and our total
+        int random = new Random().nextInt(totalWeight);
+
+        Iterator<CustomEnchantment> iter = enchantments.iterator();
+        CustomEnchantment enchantment = null;
+
+        //loop thru our weightings until we arrive at the correct one
+        int current = 0;
+        while (iter.hasNext()){
+            enchantment = iter.next();
+            current += enchantment.getWeight();
+            if (random < current)
+                return enchantment;
+        }
+
+        return enchantment; //or null
     }
 
     /**
      * Gets the total weight of all custom enchantments applicable to the item
      *
-     * @param itemName item name
-     * @return         total custom enchantment weight
+     * @param item  item type to get the weight for
+     * @return      total custom enchantment weight
      */
-    static int customWeight(String itemName) {
+    static int weightOfAllEnchants(Collection<CustomEnchantment> validEnchants, ItemStack item) {
         int count = 0;
-        for (CustomEnchantment enchantment : EnchantmentAPI.getEnchantments()) {
-            for (String s : enchantment.naturalItems) {
-                if (itemName.equalsIgnoreCase(s)) count += enchantment.weight;
-            }
+        for (CustomEnchantment enchantment : validEnchants) {
+            //TODO fix this design issue
+            count += enchantment.getWeight();
         }
         return count;
     }
 
-    /**
-     * Gets the total weight of all vanilla enchantments applicable to the item
-     *
-     * @param item item
-     * @return     total vanilla enchantment weight
-     */
-    static int vanillaWeight(ItemStack item) {
-        int count = 0;
-        for (int i = 0; i < WEIGHTS.length; i++) {
-            if (!ENCHANTS[i].canEnchantItem(item) && item.getType() != Material.BOOK) continue;
-            count += WEIGHTS[i];
+    static List<CustomEnchantment> getAllValidEnchants(ItemStack item){
+        List<CustomEnchantment> validEnchantments = new ArrayList<CustomEnchantment>();
+
+        for (CustomEnchantment enchantment : EnchantmentAPI.getEnchantments()){
+            if (enchantment instanceof VanillaEnchantment ? enchantment.canEnchantOnto(item) : enchantment.canEnchantOnto(item)){
+                validEnchantments.add(enchantment);
+            }
         }
-        return count;
+
+        return validEnchantments;
     }
 }

@@ -1,10 +1,9 @@
 package com.rit.sucy;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.Material;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,7 +16,6 @@ import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -56,7 +54,8 @@ class EListener implements Listener {
         // Rule out cases where enchantments don't apply
         Entity damager = event.getDamager();
         if (damager instanceof Projectile) damager = ((Projectile) damager).getShooter();
-        if (event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK) return;
+        if (event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK
+                && event.getCause() != EntityDamageEvent.DamageCause.PROJECTILE) return;
         if (!(damager instanceof LivingEntity)) return;
         if (!(event.getEntity() instanceof LivingEntity)) return;
 
@@ -188,8 +187,6 @@ class EListener implements Listener {
     @EventHandler (priority =  EventPriority.MONITOR, ignoreCancelled = true)
     public void onEquip(InventoryClickEvent event) {
         new EEquip(plugin.getServer().getPlayer(event.getWhoClicked().getName())).runTaskLater(plugin, 1);
-        if (event.getInventory().getHolder() instanceof Player)
-            new EEquip((Player)event.getInventory().getHolder()).runTaskLater(plugin, 1);
     }
 
     /**
@@ -252,22 +249,6 @@ class EListener implements Listener {
             return;
         }
     }
-
-    /*
-    @EventHandler (priority = EventPriority.LOWEST)
-    public void onAnvil(InventoryClickEvent event) {
-        if (event.getInventory().getType() == InventoryType.ANVIL) {
-            Player player = plugin.getServer().getPlayer(event.getWhoClicked().getName());
-            boolean top = event.getRawSlot() < event.getView().getTopInventory().getSize();
-            if (top) {
-                if (!event.isRightClick() && event.getSlot() == 2 && event.getCurrentItem().getType() != Material.AIR) {
-                    player.sendMessage("Done");
-                }
-            }
-            new EAnvilTask(event.getView().getTopInventory()).runTaskLater(plugin, 1);
-        }
-    }
-    */
 
     /**
      * Gets a list of valid enchantments from a set of items
