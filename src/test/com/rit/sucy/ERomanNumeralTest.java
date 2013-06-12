@@ -20,12 +20,12 @@ public class ERomanNumeralTest {
     }
 
     /**
-     * What happens if we input a literal which isn't a valid number
+     * Invalid characters will return 0
      */
-    @Test (expected = IllegalArgumentException.class)
+    @Test
     public void invalid_getNumeralValueTest()
     {
-        ERomanNumeral.getNumeralValue('E');
+        assertEquals(ERomanNumeral.getNumeralValue('E'), 0);
     }
 
     /**
@@ -42,8 +42,6 @@ public class ERomanNumeralTest {
         assertEquals(4, ERomanNumeral.getValueOf("IV"));
         assertEquals(99, ERomanNumeral.getValueOf("IC"));
         assertEquals(54, ERomanNumeral.getValueOf("LIV"));
-        //This doesn't work:
-        //assertEquals(33, ERomanNumeral.getValueOf("IIVXL"));
     }
 
     /**
@@ -57,23 +55,5 @@ public class ERomanNumeralTest {
         assertEquals("IX", ERomanNumeral.numeralOf(9));
         assertEquals("IV", ERomanNumeral.numeralOf(4));
         assertEquals("VI", ERomanNumeral.numeralOf(6));
-    }
-
-    /**
-     * Roman numbers don't support negative values
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void negative_numeralOfTest()
-    {
-        ERomanNumeral.numeralOf(-1);
-    }
-
-    /**
-     * Roman numbers can't represent zero
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void zero_numeralOfTest()
-    {
-        ERomanNumeral.numeralOf(0);
     }
 }
