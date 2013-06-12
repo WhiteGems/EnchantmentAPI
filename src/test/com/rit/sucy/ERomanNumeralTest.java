@@ -9,6 +9,7 @@ import static junit.framework.Assert.assertEquals;
  */
 public class ERomanNumeralTest {
 
+    // Test comment
     /**
      * Test if we get correct values when inputting valid input
      */

@@ -1,14 +1,21 @@
 name: EnchantmentAPI
 main: com.rit.sucy.EnchantmentAPI
-version: 2.4
+version: 2.6
 commands:
     enchantlist:
         description: lists all registered custom enchantments
         usage: /enchantlist
-        aliases: enchantmentapi
-        permission: EnchantmentAPI.*
+        permission: EnchantmentAPI.list
+        permission-message: You lack the privileges to use that!
+    addenchant:
+        description: applies a custom enchantment
+        usage: /applyenchant <enchantName> [enchantLevel]
+        permission: EnchantmentAPI.admin
         permission-message: You lack the privileges to use that!
 permissions:
-    EnchantmentAPI.*:
-        description: access for the /enchantlist command
+    EnchantmentAPI.list:
+        description: basic list of enchantments
         default: true
+    EnchantmentAPI.admin:
+        description: applying enchantments
+        default: op
