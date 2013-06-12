@@ -1,6 +1,6 @@
 name: EnchantmentAPI
 main: com.rit.sucy.EnchantmentAPI
-version: 2.6
+version: 2.7
 commands:
     enchantlist:
         description: lists all registered custom enchantments

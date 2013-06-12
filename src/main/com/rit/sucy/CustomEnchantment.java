@@ -14,10 +14,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Base class for custom enchantments
@@ -81,7 +78,7 @@ public abstract class CustomEnchantment {
             weight = config.getInt(name + ".weight");
         if (config.contains(name + " .items")) {
             List<String> items = config.getStringList(name + ".items");
-            this.naturalItems = items.toArray(new String[items.size()]);
+            naturalItems = items.toArray(new String[items.size()]);
         }
         isEnabled = !config.contains(name + ".enabled") || config.getBoolean(name + ".enabled");
 
@@ -96,7 +93,7 @@ public abstract class CustomEnchantment {
         if (!config.contains(name + ".enabled"))
             config.set(name + ".enabled", true);
         if (!config.contains(name + ".items") && !(this instanceof VanillaEnchantment))
-            config.set(name + ".items", naturalItems);
+            config.set(name + ".items", Arrays.asList(naturalItems));
 
         conflictingEnchants = new String [] {};
     }
