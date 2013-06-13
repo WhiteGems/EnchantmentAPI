@@ -12,6 +12,11 @@ commands:
         usage: /applyenchant <enchantName> [enchantLevel]
         permission: EnchantmentAPI.admin
         permission-message: You lack the privileges to use that!
+    enchantreload:
+        description: reloads the enchantments
+        usage: /reloadenchants
+        permission: EnchantmentAPI.admin
+        permission-message: You lack the privileges to use that!
 permissions:
     EnchantmentAPI.list:
         description: basic list of enchantments

@@ -100,6 +100,10 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
             }
             sender.sendMessage(message);
         }
+        else if (cmd.getName().equalsIgnoreCase("reloadenchants")) {
+            getServer().getPluginManager().disablePlugin(this);
+            getServer().getPluginManager().enablePlugin(this);
+        }
         else if (sender instanceof Player) {
             if (args.length == 0)
                 sender.sendMessage(ChatColor.DARK_RED + "Invalid number of arguments: expected at least 1");
