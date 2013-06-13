@@ -1,6 +1,7 @@
 package com.rit.sucy;
 
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -11,6 +12,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -233,6 +235,7 @@ public abstract class CustomEnchantment {
     public ItemStack addToItem(ItemStack item, int enchantLevel) {
         Validate.notNull(item);
         ItemMeta meta = item.getItemMeta();
+        if (meta == null) meta = Bukkit.getServer().getItemFactory().getItemMeta(item.getType());
         List<String> metaLore = meta.getLore() == null ? new ArrayList<String>() : meta.getLore();
 
         // Make sure the enchantment doesn't already exist on the item

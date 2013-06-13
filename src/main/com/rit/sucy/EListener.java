@@ -52,6 +52,7 @@ class EListener implements Listener {
     public void onHit(EntityDamageByEntityEvent event) {
 
         // Rule out cases where enchantments don't apply
+        if (event.getDamager() == event.getEntity()) return;
         Entity damager = event.getDamager();
         if (damager instanceof Projectile) damager = ((Projectile) damager).getShooter();
         if (event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK
@@ -74,6 +75,7 @@ class EListener implements Listener {
     public void onDamaged(EntityDamageByEntityEvent event) {
 
         // Rule out cases where enchantments don't apply
+        if (event.getDamager() == event.getEntity()) return;
         if (!(event.getEntity() instanceof LivingEntity)) return;
 
         // Apply enchantments
@@ -224,7 +226,7 @@ class EListener implements Listener {
      *
      * @param event event details
      */
-    @EventHandler
+    @EventHandler (ignoreCancelled = true)
     public void onEnchant(EnchantItemEvent event) {
         event.setCancelled(true);
         if (EnchantmentAPI.getEnchantments(event.getItem()).size() > 0) return;
