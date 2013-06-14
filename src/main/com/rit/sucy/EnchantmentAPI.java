@@ -5,8 +5,10 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
+import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -43,6 +45,7 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
 
         // Listeners
         new EListener(this);
+        //new EAnvil(this);
         getCommand("enchantlist").setExecutor(this);
         getCommand("addenchant").setExecutor(this);
 
@@ -91,11 +94,11 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
      */
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (cmd.getName().equalsIgnoreCase("enchantList")) {
-            String message = "Registered enchantments: ";
+            String message = ChatColor.GREEN + "Registered enchantments: ";
             if (enchantments.size() > 0) {
                 for (CustomEnchantment enchantment : enchantments.values())
                     if (!(enchantment instanceof VanillaEnchantment))
-                        message += enchantment.name() + ", ";
+                        message += ChatColor.GOLD + enchantment.name() + ChatColor.GRAY + ", ";
                 message = message.substring(0, message.length() - 2);
             }
             sender.sendMessage(message);
@@ -103,6 +106,7 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
         else if (cmd.getName().equalsIgnoreCase("reloadenchants")) {
             getServer().getPluginManager().disablePlugin(this);
             getServer().getPluginManager().enablePlugin(this);
+            sender.sendMessage(ChatColor.GREEN + "Enchantments have been reloaded!");
         }
         else if (sender instanceof Player) {
             if (args.length == 0)
@@ -221,6 +225,21 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
             }
         }
         return list;
+    }
+
+    /**
+     * Gets every enchantment on an item, vanilla and custom
+     * @param item item to retrieve the enchantments of
+     * @return     all enchantments on the item
+     */
+    public static Map<CustomEnchantment, Integer> getAllEnchantments(ItemStack item) {
+        Map<CustomEnchantment, Integer> map = getEnchantments(item);
+        if (item.hasItemMeta() && item.getItemMeta().hasEnchants()) {
+            for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
+                map.put(getEnchantment(entry.getKey().getName()), entry.getValue());
+            }
+        }
+        return map;
     }
 
     /**

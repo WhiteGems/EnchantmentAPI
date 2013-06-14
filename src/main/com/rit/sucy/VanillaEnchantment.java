@@ -46,6 +46,18 @@ public class VanillaEnchantment extends CustomEnchantment
         return vanilla;
     }
 
+    @Override
+    public ItemStack addToItem(ItemStack item, int level) {
+        item.addUnsafeEnchantment(vanilla, level);
+        return item;
+    }
+
+    @Override
+    public ItemStack removeFromItem(ItemStack item) {
+        item.removeEnchantment(vanilla);
+        return item;
+    }
+
     /**
      * Pipe the call to the Vanilla Enchant "API"
      *

@@ -15,6 +15,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import sun.io.CharToByteASCII;
 
 import java.util.*;
 
@@ -78,7 +79,7 @@ public abstract class CustomEnchantment {
         FileConfiguration config = EnchantmentAPI.config();
         if (config.contains(name + ".weight"))
             weight = config.getInt(name + ".weight");
-        if (config.contains(name + " .items")) {
+        if (config.contains(name + ".items")) {
             List<String> items = config.getStringList(name + ".items");
             naturalItems = items.toArray(new String[items.size()]);
         }
@@ -239,27 +240,14 @@ public abstract class CustomEnchantment {
         List<String> metaLore = meta.getLore() == null ? new ArrayList<String>() : meta.getLore();
 
         // Make sure the enchantment doesn't already exist on the item
-        for (String lore : metaLore) {
-            if (lore.contains(enchantName)) {
-
-                // Confirm that the enchanting name is the same
-                String loreName = ENameParser.parseName(lore);
-                if (loreName == null) continue;
-                if (!enchantName.equalsIgnoreCase(loreName)) continue;
-
-                // Compare the enchantment levels
-                String[] pieces = lore.split(" ");
-                int level = ERomanNumeral.getValueOf(pieces[pieces.length - 1]);
-                if (level == 0) continue;
-
-                // Leave higher enchantments alone
-                if (level >= enchantLevel) return item;
-
-                // Replace lower enchantments
-                List<String> newLore = meta.getLore();
-                newLore.remove(lore);
-                meta.setLore(newLore);
-                break;
+        for (Map.Entry<CustomEnchantment, Integer> entry : EnchantmentAPI.getEnchantments(item).entrySet()) {
+            if (entry.getKey().name().equals(name())) {
+                if (entry.getValue() < enchantLevel) {
+                    metaLore.remove(ChatColor.GRAY + name() + " " + ERomanNumeral.numeralOf(entry.getValue()));
+                }
+                else {
+                    return item;
+                }
             }
         }
 
@@ -285,20 +273,9 @@ public abstract class CustomEnchantment {
         List<String> metaLore = meta.getLore();
 
         // Make sure the enchantment doesn't already exist on the item
-        for (String lore : metaLore) {
-            if (lore.contains(enchantName)) {
-
-                // Confirm that the enchanting name is the same
-                String loreName = ENameParser.parseName(lore);
-                if (loreName == null) continue;
-                if (!enchantName.equalsIgnoreCase(loreName)) continue;
-
-                // Compare the enchantment levels
-                List<String> newLore = meta.getLore();
-                newLore.remove(lore);
-                meta.setLore(newLore);
-                item.setItemMeta(meta);
-                return item;
+        for (Map.Entry<CustomEnchantment, Integer> entry : EnchantmentAPI.getEnchantments(item).entrySet()) {
+            if (entry.getKey().name().equals(name())) {
+                metaLore.remove(ChatColor.GRAY + name() + " " + ERomanNumeral.numeralOf(entry.getValue()));
             }
         }
         return item;

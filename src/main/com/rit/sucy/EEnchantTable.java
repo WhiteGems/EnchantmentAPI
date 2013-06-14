@@ -22,16 +22,9 @@ public class EEnchantTable {
      *
      * @param item         item to enchant
      * @param enchantLevel experience level used
-     * @param event        event details
      * @return             the enchanted item
      */
-    public static ItemStack enchant(ItemStack item, int enchantLevel, EnchantItemEvent event) {
-
-        // Don't use the normal enchantments
-        event.getEnchantsToAdd().clear();
-
-        // Get a modified enchantment level (between 1 and 49)
-        enchantLevel = modifiedLevel(enchantLevel, MaterialClass.getEnchantabilityFor(item.getType()));
+    public static ItemStack enchant(ItemStack item, int enchantLevel) {
 
         boolean chooseEnchantment = true;
         //enchants added to the item
@@ -46,7 +39,11 @@ public class EEnchantTable {
 
         // Keep choosing enchantments as long as needed
         while (chooseEnchantment) {
+
             chooseEnchantment = false;
+
+            // Modify the enchantment level
+            enchantLevel = modifiedLevel(enchantLevel, MaterialClass.getEnchantabilityFor(item.getType()));
 
             // Try to add an Enchantment, stop adding enchantments if the enchantment would conflict
             CustomEnchantment enchant = null;
@@ -55,7 +52,7 @@ public class EEnchantTable {
                 enchant = weightedRandom(validEnchants, item);
                 if (enchant.conflictsWith(new ArrayList<CustomEnchantment>(choosenEnchantsWithCost.keySet())))
                     continue;
-                level = enchant.getEnchantmentLevel(enchantLevel);
+                level = enchant.getEnchantmentLevel((int)(0.3 + enchantLevel * (0.29 * Math.random() + 0.7)));
 
                 // Add the enchantment to the list
                 choosenEnchantsWithCost.put(enchant, level);
@@ -64,7 +61,7 @@ public class EEnchantTable {
 
             // Reduce the chance of getting another one along with the power of the next one
             enchantLevel /= 2;
-            if (Math.random() < (enchantLevel + 1) / 50.0) chooseEnchantment = true;
+            if (Math.random() < (enchantLevel + 1) / 25.0) chooseEnchantment = true;
 
             // Books can only have a single enchantment
             if (item.getType() == Material.BOOK) chooseEnchantment = false;
@@ -77,10 +74,8 @@ public class EEnchantTable {
 
             if (selectedEnchant == null)
                 return item; //And cancel event
-            else if (selectedEnchant instanceof VanillaEnchantment)
-                item.addUnsafeEnchantment(((VanillaEnchantment)selectedEnchant).getVanillaEnchant(), levelCost);
-            else
-                selectedEnchant.addToItem(item, levelCost);
+
+            selectedEnchant.addToItem(item, levelCost);
         }
 
         return item;
@@ -170,7 +165,15 @@ public class EEnchantTable {
         List<CustomEnchantment> validEnchantments = new ArrayList<CustomEnchantment>();
 
         for (CustomEnchantment enchantment : EnchantmentAPI.getEnchantments()){
-            if (enchantment instanceof VanillaEnchantment ? enchantment.canEnchantOnto(item) : enchantment.canEnchantOnto(item)){
+            if (item.getType() == Material.BOOK)
+                validEnchantments.add(enchantment);
+            else if (enchantment instanceof VanillaEnchantment ? enchantment.canEnchantOnto(item) : enchantment.canEnchantOnto(item)){
+                if (enchantment.name().equals("DURABILITY")
+                        && !item.getType().name().contains("PICKAXE")
+                        && !item.getType().name().contains("AXE")
+                        && !item.getType().name().contains("SPADE")
+                        && !item.getType().name().contains("HOE"))
+                    continue;
                 validEnchantments.add(enchantment);
             }
         }
