@@ -13,47 +13,47 @@ public enum VanillaData
      * ARMOR
      */
     PROTECTION_ENVIRONMENTAL (Enchantment.PROTECTION_ENVIRONMENTAL,
-            10, new int [] {1, 10, 20, 25}),
+            10, new int [] {1, 5, 15, 25}),
     PROTECTION_FALL(Enchantment.PROTECTION_FALL,
-            5,  new int [] {1, 10, 15, 20}),
+            5,  new int [] {1, 5, 15, 20}),
     PROTECTION_FIRE(Enchantment.PROTECTION_FIRE,
-            5,  new int [] {1, 10, 20, 25}),
+            5,  new int [] {1, 5, 15, 25}),
     PROTECTION_PROJECTILE(Enchantment.PROTECTION_PROJECTILE,
-            5,  new int [] {1, 10, 25, 20}),
+            5,  new int [] {1, 5, 15, 25}),
     WATER_WORKER(Enchantment.WATER_WORKER,
             2,  new int [] {1}),
     PROTECTION_EXPLOSIONS(Enchantment.PROTECTION_EXPLOSIONS,
-            2,  new int [] {1, 10, 20, 25}),
+            2,  new int [] {1, 5, 20, 25}),
     OXYGEN(Enchantment.OXYGEN,
-            2,  new int [] {1, 15, 25}),
+            2,  new int [] {1, 8, 25}),
     THORNS(Enchantment.THORNS,
-            1,  new int [] {1, 20, 30}),
+            1,  new int [] {1, 12, 30}),
 
     /**
      * WEAPONS
      */
     DAMAGE_ALL(Enchantment.DAMAGE_ALL,
-            10, new int [] {1, 10, 15, 20, 25}),
+            10, new int [] {1, 5, 15, 25, 35}),
     DAMAGE_ARTHROPODS(Enchantment.DAMAGE_ARTHROPODS,
-            5,  new int [] {1, 10, 15, 20, 25}),
+            5,  new int [] {1, 5, 15, 20, 32}),
     KNOCKBACK(Enchantment.KNOCKBACK,
-            5,  new int [] {1, 25}),
+            5,  new int [] {1, 8}),
     DAMAGE_UNDEAD(Enchantment.DAMAGE_UNDEAD,
-            5,  new int [] {1, 10, 15, 20, 25}),
+            5,  new int [] {1, 5, 15, 20, 32}),
     FIRE_ASPECT(Enchantment.FIRE_ASPECT,
-            2,  new int [] {1, 25}),
+            2,  new int [] {1, 5}),
     LOOT_BONUS_MOBS(Enchantment.LOOT_BONUS_MOBS,
-            2,  new int [] {1, 20, 30}),
+            2,  new int [] {1, 8, 32}),
 
     /**
      * TOOLS
      */
     DIG_SPEED(Enchantment.DIG_SPEED,
-            10, new int [] {1, 10, 15, 20, 25}),
+            10, new int [] {1, 5, 15, 25, 35}),
     DURABILITY(Enchantment.DURABILITY,
-            5,  new int [] {1, 15, 25}),
+            5,  new int [] {1, 5, 25}),
     LOOT_BONUS_BLOCKS(Enchantment.LOOT_BONUS_BLOCKS,
-            2,  new int [] {1, 20, 30}),
+            2,  new int [] {1, 8, 32}),
     SILK_TOUCH(Enchantment.SILK_TOUCH,
             1,  new int [] {1}),
 
@@ -61,11 +61,11 @@ public enum VanillaData
      * BOW
      */
     ARROW_DAMAGE(Enchantment.ARROW_DAMAGE,
-            10, new int [] {1, 10, 15, 20, 25}),
+            10, new int [] {1, 5, 15, 25, 35}),
     ARROW_FIRE(Enchantment.ARROW_FIRE,
             2,  new int [] {1}),
     ARROW_KNOCKBACK(Enchantment.ARROW_KNOCKBACK,
-            2,  new int [] {1, 25}),
+            2,  new int [] {1, 8}),
     ARROW_INFINITE(Enchantment.ARROW_INFINITE,
             1,  new int [] {1}),
     ;
