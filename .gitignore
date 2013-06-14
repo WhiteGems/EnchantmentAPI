@@ -221,6 +221,7 @@ pip-log.txt
 *.iml
 .iml
 out
+.idea
 
 #########
 # Maven #
