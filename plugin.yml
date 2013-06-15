@@ -1,15 +1,23 @@
 name: EnchantmentAPI
 main: com.rit.sucy.EnchantmentAPI
-version: 2.6
+version: 3.1
 commands:
-    enchantlist:
+    enchantapi:
+        description: root command
+        usage: /enchantapi show the help menu
+    enchantapi list:
         description: lists all registered custom enchantments
-        usage: /enchantlist
+        usage: /enchantapi
         permission: EnchantmentAPI.list
         permission-message: You lack the privileges to use that!
-    addenchant:
+    enchantapi add:
         description: applies a custom enchantment
-        usage: /applyenchant <enchantName> [enchantLevel]
+        usage: /enchantapi add <enchantName> [enchantLevel]
+        permission: EnchantmentAPI.admin
+        permission-message: You lack the privileges to use that!
+    enchantapi reload:
+        description: reloads the enchantments
+        usage: /enchantapi reload
         permission: EnchantmentAPI.admin
         permission-message: You lack the privileges to use that!
 permissions:

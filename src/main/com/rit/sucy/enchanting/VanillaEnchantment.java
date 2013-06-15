@@ -1,12 +1,14 @@
-package com.rit.sucy;
+package com.rit.sucy.enchanting;
 
+import com.rit.sucy.CustomEnchantment;
+import com.rit.sucy.service.MaterialClass;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -19,10 +21,6 @@ public class VanillaEnchantment extends CustomEnchantment
      */
     Enchantment vanilla;
     /**
-     * Map holding the weight for
-     */
-    Map<MaterialClass, Integer> weight;
-    /**
      * Allow this enchantment to be more prevalent on certain Material types
      */
     Map<MaterialClass, Integer> enchantability;
@@ -32,12 +30,15 @@ public class VanillaEnchantment extends CustomEnchantment
     int [] expLevels;
 
     public VanillaEnchantment(Enchantment vanilla, int weight, int [] expLevels, String name) {
-        super(name, new String []{}, weight); //we override the method
+        super(name, new Material[] {}, weight); //we override the method
         this.vanilla = vanilla;
         this.expLevels = expLevels;
 
         this.weight = new HashMap<MaterialClass, Integer>();
         this.weight.put(MaterialClass.DEFAULT, weight);
+
+        //Set it to the default Materials, defined by bukkit
+        setNaturalMaterials(getAllEnchantableMaterials());
 
         this.enchantability = new HashMap<MaterialClass, Integer>();
     }
@@ -46,16 +47,33 @@ public class VanillaEnchantment extends CustomEnchantment
         return vanilla;
     }
 
-    /**
-     * Pipe the call to the Vanilla Enchant "API"
-     *
-     * @param  item the item to check for
-     *
-     * @return if can be applied
-     */
     @Override
-    public boolean canEnchantOnto(ItemStack item) {
-        return vanilla.canEnchantItem(item) || item.getType() == Material.BOOK;
+    public ItemStack addToItem(ItemStack item, int level) {
+        item.addUnsafeEnchantment(vanilla, level);
+        return item;
+    }
+
+    @Override
+    public ItemStack removeFromItem(ItemStack item) {
+        item.removeEnchantment(vanilla);
+        return item;
+    }
+
+    /**
+     * Get all the Materials onto which this enchantment can be applied by default
+     *
+     * @return all enchantable Materials
+     */
+    public Material[] getAllEnchantableMaterials() {
+        List<Material> materials = new ArrayList<Material>();
+        //Quick, dirty, effective if there is no method in the API
+        for (Material material : Material.values())
+        {
+            if (material != Material.AIR) //NPE
+                if (vanilla.canEnchantItem(new ItemStack(material)))
+                    materials.add(material);
+        }
+        return materials.toArray(new Material[materials.size()]);
     }
 
     /**
