@@ -1,4 +1,4 @@
-package com.rit.sucy;
+package com.rit.sucy.service;
 
 import org.bukkit.Material;
 

@@ -1,10 +1,16 @@
 package com.rit.sucy;
 
+import com.rit.sucy.commands.Commander;
+import com.rit.sucy.config.RootConfig;
+import com.rit.sucy.enchanting.EEquip;
+import com.rit.sucy.enchanting.EListener;
+import com.rit.sucy.enchanting.VanillaData;
+import com.rit.sucy.enchanting.VanillaEnchantment;
+import com.rit.sucy.service.ENameParser;
+import com.rit.sucy.service.ERomanNumeral;
+import com.rit.sucy.service.IModule;
 import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
-import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
@@ -20,7 +26,7 @@ import java.util.*;
  * @author  Steven Sucy
  * @version 1.5
  */
-public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
+public class EnchantmentAPI extends JavaPlugin{
 
     /**
      * A table of the custom enchantments that are registered
@@ -28,9 +34,14 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
     private static Hashtable<String, CustomEnchantment> enchantments = new Hashtable<String, CustomEnchantment>();
 
     /**
-     * Singleton instance of the API
+     * Registered modules.
      */
-    private static EnchantmentAPI instance;
+    private final Map<Class<? extends IModule>, IModule> modules = new HashMap<Class<? extends IModule>, IModule>();
+
+    /**
+     * Prefix for all messages send to the Player/Console
+     */
+    private static String TAG = "[EnchantAPI]"; //just to make it a bit shorter
 
     /**
      * Enables the plugin and calls for all custom enchantments from any plugins
@@ -38,24 +49,10 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
      */
     @Override
     public void onEnable(){
-
-        instance = this;
-
-        // Listeners
-        new EListener(this);
-        getCommand("enchantlist").setExecutor(this);
-        getCommand("addenchant").setExecutor(this);
-
-        // Get custom enchantments from other plugins
-        for (Plugin plugin : getServer().getPluginManager().getPlugins()) {
-            if (plugin instanceof EnchantPlugin) ((EnchantPlugin) plugin).registerEnchantments();
-        }
-        for (Player player : getServer().getOnlinePlayers()) {
-            EEquip.loadPlayer(player);
-        }
-
-        loadVanillaEnchantments();
-        saveConfig();
+        //When adding new commands register them in Commander and if you want to change the root command you have to change it in Commander as well
+        getCommand("enchantapi").setExecutor(new Commander(this));
+        registerModule(RootConfig.class, new RootConfig(this));
+        reload();
     }
 
     /**
@@ -69,6 +66,35 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
     }
 
     /**
+     * Reloads all custom and vanilla Enchantments.
+     * Shouldn't be called by other plugins.
+     */
+    public void reload()
+    {
+        HandlerList.unregisterAll(this);
+        EEquip.clear();
+        enchantments.clear();
+
+        // Get custom enchantments from other plugins
+        for (Plugin plugin : getServer().getPluginManager().getPlugins()) {
+            if (plugin instanceof EnchantPlugin) ((EnchantPlugin) plugin).registerEnchantments();
+        }
+
+        //Load provided vanilla enchantments
+        loadVanillaEnchantments();
+
+        // Listeners
+        new EListener(this);
+
+        for (Player player : getServer().getOnlinePlayers()) {
+            EEquip.loadPlayer(player);
+        }
+
+        //Important that the enchantments are loaded before the configuration is loaded
+        getModuleForClass(RootConfig.class).reload();
+    }
+
+    /**
      * Will load Vanilla Enchantments as CustomEnchantments
      * Idea: Plugins modifying the probability of vanilla enchants
      */
@@ -78,61 +104,6 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
             VanillaEnchantment vanilla = new VanillaEnchantment(defaults.getEnchantment(), defaults.getEnchantWeight(), defaults.getLevels(), defaults.name());
             registerCustomEnchantment(vanilla);
         }
-    }
-
-    /**
-     * Displays the list of registered enchantments when the command /enchantlist is executed
-     *
-     * @param sender the sender of the command that will receive the list
-     * @param cmd    the command (not used because it can only be one thing)
-     * @param label  the command label (not used)
-     * @param args   arguments (not used)
-     * @return       true
-     */
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-        if (cmd.getName().equalsIgnoreCase("enchantList")) {
-            String message = "Registered enchantments: ";
-            if (enchantments.size() > 0) {
-                for (CustomEnchantment enchantment : enchantments.values())
-                    if (!(enchantment instanceof VanillaEnchantment))
-                        message += enchantment.name() + ", ";
-                message = message.substring(0, message.length() - 2);
-            }
-            sender.sendMessage(message);
-        }
-        else if (cmd.getName().equalsIgnoreCase("reloadenchants")) {
-            getServer().getPluginManager().disablePlugin(this);
-            getServer().getPluginManager().enablePlugin(this);
-        }
-        else if (sender instanceof Player) {
-            if (args.length == 0)
-                sender.sendMessage(ChatColor.DARK_RED + "Invalid number of arguments: expected at least 1");
-            else {
-                String name = args[0];
-                int difference = 0;
-                int level = 1;
-                try {
-                    level = Integer.parseInt(args[args.length - 1]);
-                    difference = 1;
-                }
-                catch (Exception e) {
-                    // Level is not provided
-                }
-
-                for (int i = 1; i < args.length - difference; i++) name += " " + args[i];
-                Player player = (Player)sender;
-                CustomEnchantment enchantment = getEnchantment(name);
-                if (enchantment == null) {
-                    sender.sendMessage(ChatColor.DARK_RED + name + " is not a registered enchantment!");
-                }
-                else {
-                    player.setItemInHand(enchantment.addToItem(player.getItemInHand(), level));
-                    player.sendMessage(ChatColor.GREEN + "Enchantment has been applied.");
-                }
-            }
-        }
-        else sender.sendMessage(ChatColor.DARK_RED + "That is a player-only command!");
-        return true;
     }
 
     /**
@@ -224,6 +195,21 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
     }
 
     /**
+     * Gets every enchantment on an item, vanilla and custom
+     * @param item item to retrieve the enchantments of
+     * @return     all enchantments on the item
+     */
+    public static Map<CustomEnchantment, Integer> getAllEnchantments(ItemStack item) {
+        Map<CustomEnchantment, Integer> map = getEnchantments(item);
+        if (item.hasItemMeta() && item.getItemMeta().hasEnchants()) {
+            for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
+                map.put(getEnchantment(entry.getKey().getName()), entry.getValue());
+            }
+        }
+        return map;
+    }
+
+    /**
      * Checks if the given item has an enchantment with the given name
      *
      * @param item            item to check
@@ -261,14 +247,73 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
     }
 
     /**
-     * Gets the config file
+     * Gets the Prefix to be used for messages
      *
-     * @return config file
+     * @return prefix
      */
-    static FileConfiguration config() {
-        return instance.getConfig();
+    public String getTag(){
+        return TAG;
     }
 
     // Does nothing when run as .jar
     public static void main(String[] args) {}
+
+    /**
+     * Register a module.
+     *
+     * @param clazz  - Class of the instance.
+     * @param module - Module instance.
+     * @throws IllegalArgumentException - Thrown if an argument is null.
+     */
+    <T extends IModule> void registerModule(Class<T> clazz, T module)
+    {
+        // Check arguments.
+        if (clazz == null)
+        {
+            throw new IllegalArgumentException("Class cannot be null");
+        }
+        else if (module == null)
+        {
+            throw new IllegalArgumentException("Module cannot be null");
+        }
+        // Add module.
+        modules.put(clazz, module);
+        // Tell module to start.
+        module.starting();
+    }
+
+    /**
+     * Deregister a module.
+     *
+     * @param clazz - Class of the instance.
+     * @return Module that was removed. Returns null if no instance of the module
+     *         is registered.
+     */
+    public <T extends IModule> T deregisterModuleForClass(Class<T> clazz)
+    {
+        // Check arguments.
+        if (clazz == null)
+        {
+            throw new IllegalArgumentException("Class cannot be null");
+        }
+        // Grab module and tell it its closing.
+        T module = clazz.cast(modules.get(clazz));
+        if (module != null)
+        {
+            module.closing();
+        }
+        return module;
+    }
+
+    /**
+     * Retrieve a registered module.
+     *
+     * @param clazz - Class identifier.
+     * @return Module instance. Returns null is an instance of the given class
+     *         has not been registered with the API.
+     */
+    public <T extends IModule> T getModuleForClass(Class<T> clazz)
+    {
+        return clazz.cast(modules.get(clazz));
+    }
 }

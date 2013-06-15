@@ -1,5 +1,7 @@
-package com.rit.sucy;
+package com.rit.sucy.enchanting;
 
+import com.rit.sucy.EnchantmentAPI;
+import com.rit.sucy.service.ENameParser;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -10,7 +12,7 @@ import java.util.Hashtable;
 /**
  * Handles keeping track of player equipment for Equip and Unequip enchantment effects
  */
-class EEquip extends BukkitRunnable {
+public class EEquip extends BukkitRunnable {
 
     /**
      * Table of player data
@@ -22,7 +24,7 @@ class EEquip extends BukkitRunnable {
      *
      * @param player player to load
      */
-    static void loadPlayer(Player player) {
+    public static void loadPlayer(Player player) {
         equipment.put(player.getName(), player.getEquipment().getArmorContents());
     }
 
@@ -31,14 +33,14 @@ class EEquip extends BukkitRunnable {
      *
      * @param player player to clear
      */
-    static void clearPlayer(Player player) {
+    public static void clearPlayer(Player player) {
         equipment.remove(player.getName());
     }
 
     /**
      * Clears all player data
      */
-    static void clear() {
+    public static void clear() {
         equipment.clear();
     }
 
