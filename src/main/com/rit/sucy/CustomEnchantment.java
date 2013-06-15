@@ -3,6 +3,7 @@ package com.rit.sucy;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.LivingEntity;
@@ -22,32 +23,45 @@ import java.util.*;
 /**
  * Base class for custom enchantments
  */
-public abstract class CustomEnchantment {
+public abstract class CustomEnchantment implements Comparable<CustomEnchantment>{
 
     /**
      * Name of the enchantment
      */
-    private String enchantName;
+    protected final String enchantName;
 
     /**
      * Names of all the items that can receive this enchantment at an enchanting table
      */
-    private String[] naturalItems;
+    protected Material [] naturalItems;
 
     /**
      * Names of all enchantments which conflict with this Enchantment
      */
-    private String[] conflictingEnchants;
+    protected String [] conflictingEnchants;
 
     /**
      * Weight of the enchantment
      */
-    private Map<MaterialClass, Integer> weight;
+    protected Map<MaterialClass, Integer> weight;
 
     /**
      * Whether or not the enchantment is enabled
      */
-    private boolean isEnabled;
+    protected boolean isEnabled;
+
+    /**
+     * Creates a new custom enchantment with the given name that can be
+     * enchanted onto the items using an enchantment table with names
+     * given in the array.
+     *
+     * @param name         the unique name of the enchantment
+     * @param naturalItems the names of items that can normally have this enchantment
+     * @deprecated use the constructor with Material[] instead
+     */
+    public CustomEnchantment(String name, String[] naturalItems) {
+        this(name, naturalItems, 5);
+    }
 
     /**
      * Creates a new custom enchantment with the given name that can be
@@ -57,7 +71,7 @@ public abstract class CustomEnchantment {
      * @param name         the unique name of the enchantment
      * @param naturalItems the names of items that can normally have this enchantment
      */
-    public CustomEnchantment(String name, String[] naturalItems) {
+    public CustomEnchantment(String name, Material[] naturalItems) {
         this(name, naturalItems, 5);
     }
 
@@ -70,33 +84,53 @@ public abstract class CustomEnchantment {
      * @param name         the unique name of the enchantment
      * @param naturalItems the names of items that can normally have this enchantment
      * @param weight       the weight of the enchantment
+     * @deprecated use constructor with Material[] instead instead of String[]
      */
     public CustomEnchantment(String name, String[] naturalItems, int weight) {
         Validate.notEmpty(name, "Your Enchantment needs a name!");
         Validate.notNull(naturalItems, "Input an empty array instead of \"null\"!");
         Validate.isTrue(weight >= 0, "Weight can't be negative!");
 
-        FileConfiguration config = EnchantmentAPI.config();
-        if (config.contains(name + ".weight"))
-            weight = config.getInt(name + ".weight");
-        if (config.contains(name + ".items")) {
-            List<String> items = config.getStringList(name + ".items");
-            naturalItems = items.toArray(new String[items.size()]);
-        }
-        isEnabled = !config.contains(name + ".enabled") || config.getBoolean(name + ".enabled");
-
         this.enchantName = name;
-        this.naturalItems = naturalItems;
+        List<Material> materials = new ArrayList<Material>();
+        for (String itemName : naturalItems)
+        {
+            Material mat = Material.matchMaterial(itemName);
+            if (mat != null)
+                materials.add(mat);
+        }
+        this.isEnabled = true;
+        this.naturalItems = materials.toArray(new Material[materials.size()]);
 
         this.weight = new HashMap<MaterialClass, Integer>();
         this.weight.put(MaterialClass.DEFAULT, weight);
 
-        if (!config.contains(name + ".weight"))
-            config.set(name + ".weight", weight);
-        if (!config.contains(name + ".enabled"))
-            config.set(name + ".enabled", true);
-        if (!config.contains(name + ".items") && !(this instanceof VanillaEnchantment))
-            config.set(name + ".items", Arrays.asList(naturalItems));
+        conflictingEnchants = new String [] {};
+    }
+
+    /**
+     * Creates a new custom enchantment with the given name that can
+     * be enchanted onto the items using an enchantment table with names
+     * given in the array. The chance of this enchantment occurring is
+     * based on the weight (generally between 1 and 10, 1 being the most rare)
+     *
+     * @param name         the unique name of the enchantment
+     * @param naturalItems the names of items that can normally have this enchantment
+     * @param weight       the weight of the enchantment
+     */
+    public CustomEnchantment(String name, Material [] naturalItems, int weight) {
+        Validate.notEmpty(name, "Your Enchantment needs a name!");
+        Validate.notNull(naturalItems, "Input an empty array instead of \"null\"!");
+        Validate.isTrue(weight >= 0, "Weight can't be negative!");
+
+        this.enchantName = name;
+        List<Material> materials = new ArrayList<Material>();
+        this.naturalItems = naturalItems;
+        this.isEnabled = true;
+        this.naturalItems = materials.toArray(new Material[materials.size()]);
+
+        this.weight = new HashMap<MaterialClass, Integer>();
+        this.weight.put(MaterialClass.DEFAULT, weight);
 
         conflictingEnchants = new String [] {};
     }
@@ -108,6 +142,14 @@ public abstract class CustomEnchantment {
      */
     public String name() {
         return enchantName;
+    }
+
+    /**
+     * Set if this enchantment is enabled or not
+     */
+    public void setEnabled (boolean enabled)
+    {
+        this.isEnabled = enabled;
     }
 
     /**
@@ -130,12 +172,41 @@ public abstract class CustomEnchantment {
     }
 
     /**
+     * Set the items on which this enchantment can be found
+     *
+     * @param materials list of valid Materials for this enchantment
+     */
+    public void setNaturalMaterials(Material [] materials)
+    {
+        this.naturalItems = materials;
+    }
+
+    /**
      * Get the items on which this enchantment can naturally be found on
      *
      * @return      the names of the items
+     * @deprecated use getNaturalMaterials instead
      */
     public String[] getNaturalItems(){
+        String[] natItems = new String [naturalItems.length];
+        for (int i = 0; i < naturalItems.length; i++)
+            natItems[i] = naturalItems[i].name();
+        return natItems;
+    }
+
+    public Material[] getNaturalMaterials()
+    {
         return naturalItems;
+    }
+
+    /**
+     * Set weight for default MaterialClass
+     *
+     * @param weight
+     */
+    public void setWeight(int weight)
+    {
+        this.weight.put(MaterialClass.DEFAULT, weight);
     }
 
     /**
@@ -158,15 +229,6 @@ public abstract class CustomEnchantment {
     }
 
     /**
-     * Set the conflicting Enchantments for this Enchantments
-     *
-     * @param conflictingEnchants the names of the Enchantments
-     */
-    public void setConflictingEnchants (String ... conflictingEnchants){
-        this.conflictingEnchants = conflictingEnchants;
-    }
-
-    /**
      * Checks if this enchantment can be normally applied to the item.
      *
      * @param  item the item to check for
@@ -174,10 +236,19 @@ public abstract class CustomEnchantment {
      */
     public boolean canEnchantOnto(ItemStack item) {
         if (naturalItems == null || item == null) return false;
-        for (String validItem : naturalItems) {
-            if (item.getType().name().equalsIgnoreCase(validItem)) return true;
+        for (Material validItem : naturalItems) {
+            if (item.getType() == validItem) return true;
         }
         return false;
+    }
+
+    /**
+     * Set the conflicting Enchantments for this Enchantments
+     *
+     * @param conflictingEnchants the names of the Enchantments
+     */
+    public void setConflictingEnchants (String ... conflictingEnchants){
+        this.conflictingEnchants = conflictingEnchants;
     }
 
     /**
@@ -190,7 +261,7 @@ public abstract class CustomEnchantment {
         Validate.notNull(enchantment);
         for (String conflictingEnchant : conflictingEnchants)
         {
-            if (conflictingEnchant .equals(enchantment.name()))
+            if (conflictingEnchant .equalsIgnoreCase(enchantment.name()))
                 return true;
         }
         return false;
@@ -292,6 +363,18 @@ public abstract class CustomEnchantment {
         if (obj instanceof CustomEnchantment)
             return this.name().equalsIgnoreCase(((CustomEnchantment) obj).name());
         return false;
+    }
+
+    /**
+     * Make CustomEnchantments sortable by List.sort().
+     * We just look at the name for comparison.
+     *
+     * @param customEnchantment to compare to
+     * @return -1 if less than, 0 if equal, 1 if greater
+     */
+    @Override
+    public int compareTo(CustomEnchantment customEnchantment) {
+        return this.name().compareTo(customEnchantment.name());
     }
 
     /**
