@@ -1,8 +1,9 @@
 package com.rit.sucy;
 
+import com.rit.sucy.service.ERomanNumeral;
 import org.junit.Test;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Diemex

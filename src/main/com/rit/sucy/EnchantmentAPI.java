@@ -2,6 +2,12 @@ package com.rit.sucy;
 
 import com.rit.sucy.commands.Commander;
 import com.rit.sucy.config.RootConfig;
+import com.rit.sucy.enchanting.EEquip;
+import com.rit.sucy.enchanting.EListener;
+import com.rit.sucy.enchanting.VanillaData;
+import com.rit.sucy.enchanting.VanillaEnchantment;
+import com.rit.sucy.service.ENameParser;
+import com.rit.sucy.service.ERomanNumeral;
 import com.rit.sucy.service.IModule;
 import org.bukkit.ChatColor;
 import org.bukkit.enchantments.Enchantment;

@@ -1,4 +1,4 @@
-package com.rit.sucy;
+package com.rit.sucy.service;
 
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
@@ -6,7 +6,7 @@ import org.bukkit.inventory.ItemStack;
 /**
  * Parses lore names into enchantment names and levels
  */
-class ENameParser {
+public class ENameParser {
 
     /**
      * Parses an enchantment name from a lore string
@@ -14,7 +14,7 @@ class ENameParser {
      * @param lore the lore string to parse
      * @return     enchantment name
      */
-    static String parseName(String lore) {
+    public static String parseName(String lore) {
         if (!lore.contains(" ")) return null;
 
         String[] pieces = lore.split(" ");
@@ -32,7 +32,7 @@ class ENameParser {
      * @param lore the lore string to parse
      * @return     enchantment name
      */
-    static int parseLevel(String lore) {
+    public static int parseLevel(String lore) {
         if (!lore.contains(" ")) return 0;
 
         String[] pieces = lore.split(" ");

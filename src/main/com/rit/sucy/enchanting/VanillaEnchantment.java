@@ -1,10 +1,15 @@
-package com.rit.sucy;
+package com.rit.sucy.enchanting;
 
+import com.rit.sucy.CustomEnchantment;
+import com.rit.sucy.service.MaterialClass;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author Diemex

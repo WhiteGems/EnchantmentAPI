@@ -2,7 +2,7 @@ package com.rit.sucy.commands;
 
 import com.rit.sucy.CustomEnchantment;
 import com.rit.sucy.EnchantmentAPI;
-import com.rit.sucy.VanillaEnchantment;
+import com.rit.sucy.enchanting.VanillaEnchantment;
 import com.rit.sucy.service.ICommand;
 import com.rit.sucy.service.PermissionNode;
 import org.bukkit.ChatColor;

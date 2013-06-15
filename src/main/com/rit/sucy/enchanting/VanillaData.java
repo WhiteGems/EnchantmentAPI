@@ -1,6 +1,5 @@
-package com.rit.sucy;
+package com.rit.sucy.enchanting;
 
-import org.bukkit.Bukkit;
 import org.bukkit.enchantments.Enchantment;
 
 /**

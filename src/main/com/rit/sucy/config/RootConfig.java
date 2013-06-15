@@ -2,7 +2,7 @@ package com.rit.sucy.config;
 
 import com.rit.sucy.CustomEnchantment;
 import com.rit.sucy.EnchantmentAPI;
-import com.rit.sucy.VanillaEnchantment;
+import com.rit.sucy.enchanting.VanillaEnchantment;
 import com.rit.sucy.service.MaterialsParser;
 import com.rit.sucy.service.ModularConfig;
 import org.bukkit.Material;
