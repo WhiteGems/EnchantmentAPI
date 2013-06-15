@@ -131,6 +131,22 @@ public abstract class CustomEnchantment {
     }
 
     /**
+     * Gets the cost per level in the anvil when this enchantment is present
+     *
+     * @param withBook whether or not a book was used
+     * @return         cost per level
+     */
+    public int getCostPerLevel(boolean withBook) {
+        int costIndex = weight.get(MaterialClass.DEFAULT);
+        int divisor = withBook ? 2 : 1;
+        return
+            weight.get(MaterialClass.DEFAULT) == 1 ? 8 / divisor
+            : costIndex < 10 ? 4 / divisor
+            : costIndex < 30 ? 2 / divisor
+            : 1;
+    }
+
+    /**
      * Get the items on which this enchantment can naturally be found on
      *
      * @return      the names of the items
