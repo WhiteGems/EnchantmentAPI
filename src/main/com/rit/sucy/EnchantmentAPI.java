@@ -1,6 +1,7 @@
 package com.rit.sucy;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -10,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -45,7 +47,7 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
 
         // Listeners
         new EListener(this);
-        //new EAnvil(this);
+        new EAnvil(this);
         getCommand("enchantlist").setExecutor(this);
         getCommand("addenchant").setExecutor(this);
 
@@ -238,6 +240,11 @@ public class EnchantmentAPI extends JavaPlugin implements CommandExecutor {
             for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
                 map.put(getEnchantment(entry.getKey().getName()), entry.getValue());
             }
+        }
+        if (item.getType() == Material.ENCHANTED_BOOK) {
+            EnchantmentStorageMeta meta = (EnchantmentStorageMeta)item.getItemMeta();
+            for (Map.Entry<Enchantment, Integer> entry : meta.getStoredEnchants().entrySet())
+                map.put(getEnchantment(entry.getKey().getName()), entry.getValue());
         }
         return map;
     }

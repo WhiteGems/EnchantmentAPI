@@ -276,6 +276,9 @@ class EListener implements Listener {
                     else inv.getItem().setItemMeta(null);
                 }
                 if (event.getCursor() != null && event.getCursor().getType() != Material.AIR) {
+                    if (event.getCursor().hasItemMeta() && event.getCursor().getItemMeta().hasDisplayName()
+                            && event.getCursor().getItemMeta().getDisplayName().equals(placeholder.getItemMeta().getDisplayName()))
+                        return;
                     storedItems.put(event.getWhoClicked().getName(), event.getCursor().clone());
                     createPlaceholder(event.getCursor(), event.getCursor().clone());
                 }
