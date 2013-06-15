@@ -422,7 +422,7 @@ public class EAnvil implements Listener {
         // Set the durability if applicable and add the corresponding cost
         if (primary.getDurability() > 0 && primary.getType() == secondary.getType()) {
             if (durability(item) + durability(secondary) < 0.88 * primary.getType().getMaxDurability()) {
-                setDurability(item, (short)(durability(primary) + durability(secondary) + primary.getType().getMaxDurability()));
+                setDurability(item, (short)(durability(primary) + durability(secondary) + 0.12 * primary.getType().getMaxDurability()));
                 int extraCost = (int)((durability(secondary) + 0.12 * primary.getType().getMaxDurability()) / 100);
                 cost += extraCost > 0 ? extraCost : 1;
             }
