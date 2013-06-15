@@ -1,10 +1,8 @@
 package com.rit.sucy;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -14,11 +12,9 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
-import java.awt.*;
 import java.util.*;
 import java.util.List;
 
@@ -374,10 +370,8 @@ public class EAnvil implements Listener {
         else matCost = 4 * item.getDurability() / item.getType().getMaxDurability() + 2;
 
         // Repair the item
-        if (item.getDurability() - item.getType().getMaxDurability() * 0.25 * amount < 0) {
-            newItem = new ItemStack(item.getType());
-            if (item.hasItemMeta()) newItem.setItemMeta(item.getItemMeta());
-        }
+        if (item.getDurability() - item.getType().getMaxDurability() * 0.25 * amount < 0)
+            newItem.setDurability((short)0);
         else newItem.setDurability((short)(item.getDurability() - item.getType().getMaxDurability() * amount * 0.25));
 
         // Add the cost
@@ -420,12 +414,11 @@ public class EAnvil implements Listener {
         extra += (int)((enchants.size() + 1) * (enchants.size() / 2.0));
 
         // Set the durability if applicable and add the corresponding cost
-        if (primary.getDurability() > 0 && primary.getType() == secondary.getType()) {
+        if (primary.getDurability() > 0 && primary.getType() == secondary.getType())
             if (durability(item) + durability(secondary) < 0.88 * primary.getType().getMaxDurability()) {
                 setDurability(item, (short)(durability(primary) + durability(secondary) + 0.12 * primary.getType().getMaxDurability()));
-                int extraCost = (int)((durability(secondary) + 0.12 * primary.getType().getMaxDurability()) / 100);
-                cost += extraCost > 0 ? extraCost : 1;
-            }
+            int extraCost = (int)((durability(secondary) + 0.12 * primary.getType().getMaxDurability()) / 100);
+            cost += extraCost > 0 ? extraCost : 1;
         }
 
         // Merge the enchantments
