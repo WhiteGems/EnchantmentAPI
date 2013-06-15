@@ -173,11 +173,14 @@ public class RootConfig extends ModularConfig
         {
             String base = baseNode + vanillaNode + vanillaEnchantment.name();
             //Enabled
-            out.set(base + EnchantmentNode.ENABLED.getPath(), vanillaEnchantment.isEnabled());
+            if (getBoolean(RootNode.VANILLA_ENABLED))
+                out.set(base + EnchantmentNode.ENABLED.getPath(), vanillaEnchantment.isEnabled());
             //Weight
-            out.set(base + EnchantmentNode.WEIGHT.getPath(), vanillaEnchantment.getWeight());
+            if (getBoolean(RootNode.VANILLA_WEIGHT))
+                out.set(base + EnchantmentNode.WEIGHT.getPath(), vanillaEnchantment.getWeight());
             //Items
-            out.set(base + EnchantmentNode.ITEMS.getPath(), MaterialsParser.toStringArray(vanillaEnchantment.getNaturalMaterials()));
+            if (getBoolean(RootNode.VANILLA_ITEMS))
+                out.set(base + EnchantmentNode.ITEMS.getPath(), MaterialsParser.toStringArray(vanillaEnchantment.getNaturalMaterials()));
         }
 
         //Custom Enchantments
@@ -186,11 +189,14 @@ public class RootConfig extends ModularConfig
         {
             String base = baseNode + customNode + customEnchantment.name();
             //Enabled
-            out.set(base + EnchantmentNode.ENABLED.getPath(), customEnchantment.isEnabled());
+            if (getBoolean(RootNode.CUSTOM_ENABLED))
+                out.set(base + EnchantmentNode.ENABLED.getPath(), customEnchantment.isEnabled());
             //Weight
-            out.set(base + EnchantmentNode.WEIGHT.getPath(), customEnchantment.getWeight());
+            if (getBoolean(RootNode.CUSTOM_WEIGHT))
+                out.set(base + EnchantmentNode.WEIGHT.getPath(), customEnchantment.getWeight());
             //Items
-            out.set(base + EnchantmentNode.ITEMS.getPath(), MaterialsParser.toStringArray(customEnchantment.getNaturalMaterials()));
+            if (getBoolean(RootNode.CUSTOM_ITEMS))
+                out.set(base + EnchantmentNode.ITEMS.getPath(), MaterialsParser.toStringArray(customEnchantment.getNaturalMaterials()));
         }
 
         try {

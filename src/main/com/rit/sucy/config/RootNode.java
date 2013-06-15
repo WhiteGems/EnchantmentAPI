@@ -22,25 +22,24 @@
 package com.rit.sucy.config;
 
 import com.rit.sucy.service.ConfigNode;
-import org.bukkit.Material;
-
-import java.util.ArrayList;
-import java.util.Collections;
 
 /**
 * Configuration options of the root config.yml file.
 */
-//The class is here so that if we need to add configuration we have it
 public enum RootNode implements ConfigNode
 {
-    /**
-     * Is unbreaking on swords legitimately obtainable through the Enchanting Table
-     */
-    //UNBR_ON_SWORDS  ("Unbreaking on swords", VarType.BOOLEAN, false),
-    /**
-     * Is unbreaking on hoes legitimately obtainable through the Enchanting Table
-     */
-    //UNBR_ON_HOES    ("Unbreaking on Hoes", VarType.BOOLEAN, false)
+    VANILLA_ENABLED
+            ("What you need to be able to customize.Vanilla Enchantments.Enabled", VarType.BOOLEAN, false),
+    VANILLA_WEIGHT
+            ("What you need to be able to customize.Vanilla Enchantments.Weight", VarType.BOOLEAN, false),
+    VANILLA_ITEMS
+            ("What you need to be able to customize.Vanilla Enchantments.Items", VarType.BOOLEAN, false),
+    CUSTOM_ENABLED
+            ("What you need to be able to customize.Custom Enchantments.Enabled", VarType.BOOLEAN, true),
+    CUSTOM_WEIGHT
+            ("What you need to be able to customize.Custom Enchantments.Weight", VarType.BOOLEAN, false),
+    CUSTOM_ITEMS
+            ("What you need to be able to customize.Custom Enchantments.Items", VarType.BOOLEAN, false),
     ;
     /**
      * Path.
