@@ -161,23 +161,23 @@ public class EEnchantTable {
         return count;
     }
 
+    /**
+     * Get all enchantments which can be applied to the given ItemStack
+     *
+     * @param item  item to check for applicable enchantments
+     * @return      List of all applicable enchantments
+     */
     static List<CustomEnchantment> getAllValidEnchants(ItemStack item){
         List<CustomEnchantment> validEnchantments = new ArrayList<CustomEnchantment>();
+        //Books can get everything
+        if (item.getType() == Material.BOOK)
+            return new ArrayList<CustomEnchantment>(EnchantmentAPI.getEnchantments());
 
         for (CustomEnchantment enchantment : EnchantmentAPI.getEnchantments()){
-            if (item.getType() == Material.BOOK)
-                validEnchantments.add(enchantment);
-            else if (enchantment instanceof VanillaEnchantment ? enchantment.canEnchantOnto(item) : enchantment.canEnchantOnto(item)){
-                if (enchantment.name().equals("DURABILITY")
-                        && !item.getType().name().contains("PICKAXE")
-                        && !item.getType().name().contains("AXE")
-                        && !item.getType().name().contains("SPADE")
-                        && !item.getType().name().contains("HOE"))
-                    continue;
+            if (enchantment.canEnchantOnto(item) && enchantment.isEnabled()){
                 validEnchantments.add(enchantment);
             }
         }
-
         return validEnchantments;
     }
 }
