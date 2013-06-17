@@ -10,10 +10,12 @@ import com.rit.sucy.service.ENameParser;
 import com.rit.sucy.service.ERomanNumeral;
 import com.rit.sucy.service.IModule;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -83,15 +85,16 @@ public class EnchantmentAPI extends JavaPlugin{
         //Load provided vanilla enchantments
         loadVanillaEnchantments();
 
-        // Listeners
-        new EListener(this);
-
         for (Player player : getServer().getOnlinePlayers()) {
             EEquip.loadPlayer(player);
         }
 
         //Important that the enchantments are loaded before the configuration is loaded
         getModuleForClass(RootConfig.class).reload();
+
+        // Listeners
+        new EListener(this);
+        new EAnvil(this);
     }
 
     /**
@@ -213,6 +216,12 @@ public class EnchantmentAPI extends JavaPlugin{
         Map<CustomEnchantment, Integer> map = getEnchantments(item);
         if (item.hasItemMeta() && item.getItemMeta().hasEnchants()) {
             for (Map.Entry<Enchantment, Integer> entry : item.getEnchantments().entrySet()) {
+                map.put(getEnchantment(entry.getKey().getName()), entry.getValue());
+            }
+        }
+        if (item.getType() == Material.ENCHANTED_BOOK) {
+            EnchantmentStorageMeta meta = (EnchantmentStorageMeta)item.getItemMeta();
+            for (Map.Entry<Enchantment, Integer> entry : meta.getStoredEnchants().entrySet()) {
                 map.put(getEnchantment(entry.getKey().getName()), entry.getValue());
             }
         }

@@ -70,8 +70,16 @@ public class VanillaEnchantment extends CustomEnchantment
         for (Material material : Material.values())
         {
             if (material != Material.AIR) //NPE
-                if (vanilla.canEnchantItem(new ItemStack(material)))
+                if (vanilla.canEnchantItem(new ItemStack(material))) {
+                    if (vanilla == Enchantment.DURABILITY) {
+                        if (!material.name().contains("Pickaxe")
+                            && !material.name().contains("Axe")
+                            && !material.name().contains("Spade")
+                            && !material.name().contains("Hoe"))
+                            continue;
+                    }
                     materials.add(material);
+                }
         }
         return materials.toArray(new Material[materials.size()]);
     }

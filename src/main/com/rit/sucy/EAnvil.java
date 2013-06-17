@@ -1,5 +1,6 @@
 package com.rit.sucy;
 
+import com.rit.sucy.config.LanguageNode;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -23,9 +24,6 @@ import java.util.List;
  * - still needs a lot of work -
  *
  * Known problems:
- * - Placing items with quantities of more than one will end up in losing items
- * - More materials for repairs are consumed than needed at times
- * - Haven't added the level 40 job cap of the anvil yet
  * - Can't rename items (I can't fix this with the current set-up)
  */
 public class EAnvil implements Listener {
@@ -78,32 +76,34 @@ public class EAnvil implements Listener {
 
         // Create the data for the descriptor books
 
+        List<String> component = plugin.getConfig().getStringList(LanguageNode.ANVIL_COMPONENT.getFullPath());
+        List<String> separator = plugin.getConfig().getStringList(LanguageNode.ANVIL_SEPARATOR.getFullPath());
+        List<String> result = plugin.getConfig().getStringList(LanguageNode.ANVIL_RESULT.getFullPath());
+
         ArrayList<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.LIGHT_PURPLE + "Place components");
-        lore.add(ChatColor.LIGHT_PURPLE + "over here!");
+        for (int i = 1; i < component.size(); i++)
+            lore.add(component.get(i).replace('&', ChatColor.COLOR_CHAR));
 
         ItemMeta meta = COMPONENT.getItemMeta();
-        meta.setDisplayName(ChatColor.DARK_GREEN + "Anvil Components");
+        meta.setDisplayName(component.get(0).replace('&', ChatColor.COLOR_CHAR));
         meta.setLore(lore);
         COMPONENT.setItemMeta(meta);
 
         lore.clear();
-        lore.add(ChatColor.LIGHT_PURPLE + "<- Components");
-        lore.add(ChatColor.DARK_GRAY + "-----------");
-        lore.add(ChatColor.LIGHT_PURPLE + "Results ->");
+        for (int i = 1; i < component.size(); i++)
+            lore.add(separator.get(i).replace('&', ChatColor.COLOR_CHAR));
 
         meta = MIDDLE.getItemMeta();
-        meta.setDisplayName(ChatColor.DARK_GREEN + "Anvil Book");
+        meta.setDisplayName(separator.get(0).replace('&', ChatColor.COLOR_CHAR));
         meta.setLore(lore);
         MIDDLE.setItemMeta(meta);
 
         lore.clear();
-        lore.add(ChatColor.LIGHT_PURPLE + "Results will");
-        lore.add(ChatColor.LIGHT_PURPLE + "show up over");
-        lore.add(ChatColor.LIGHT_PURPLE + "here!");
+        for (int i = 1; i < component.size(); i++)
+            lore.add(result.get(i).replace('&', ChatColor.COLOR_CHAR));
 
         meta = RESULT.getItemMeta();
-        meta.setDisplayName(ChatColor.DARK_GREEN + "Anvil Result");
+        meta.setDisplayName(result.get(0).replace('&', ChatColor.COLOR_CHAR));
         meta.setLore(lore);
         RESULT.setItemMeta(meta);
     }
@@ -339,15 +339,16 @@ public class EAnvil implements Listener {
         Map<CustomEnchantment, Integer> enchants = EnchantmentAPI.getAllEnchantments(book);
 
         // Book must have at least one enchantment and they must be able to go on the target item
-        boolean valid = enchants.size() > 0 && book.getAmount() == 1 && target.getAmount() == 1;
+        boolean valid = false;
         if (target.getType() != Material.BOOK && target.getType() != Material.ENCHANTED_BOOK) {
             for (CustomEnchantment e : enchants.keySet())
-                if (!e.canEnchantOnto(target))
-                    valid = false;
+                if (e.canEnchantOnto(target))
+                    valid = true;
         }
 
         // If the book passed the test, create a new result
-        if (valid) inv.setItem(7, makeItem(target, book));
+        if (valid && (enchants.size() > 0 && book.getAmount() == 1 && target.getAmount() == 1))
+            inv.setItem(7, makeItem(target, book));
 
         // Otherwise leave no result
         else inv.clear(7);
@@ -426,31 +427,34 @@ public class EAnvil implements Listener {
         for (Map.Entry<CustomEnchantment, Integer> entry : EnchantmentAPI.getAllEnchantments(secondary).entrySet()) {
             boolean conflict = false;
             boolean needsCost = false;
-            for (Map.Entry<CustomEnchantment, Integer> e : enchants) {
+            if (entry.getKey().canEnchantOnto(item)) {
+                for (Map.Entry<CustomEnchantment, Integer> e : enchants) {
 
-                // If they share the same enchantment, use the higher one
-                // If the levels are the same, raise it by one if it can go that high
-                if (e.getKey().name().equals(entry.getKey().name())) {
-                    e.getKey().removeFromItem(item);
-                    if (e.getValue() < entry.getValue()) {
-                        cost += (entry.getValue() - e.getValue()) * entry.getKey().getCostPerLevel(book);
-                        extra += (entry.getValue() - e.getValue()) * entry.getKey().getCostPerLevel(book);
+                    // If they share the same enchantment, use the higher one
+                    // If the levels are the same, raise it by one if it can go that high
+                    if (e.getKey().name().equals(entry.getKey().name())) {
+                        e.getKey().removeFromItem(item);
+                        if (e.getValue() < entry.getValue()) {
+                            cost += (entry.getValue() - e.getValue()) * entry.getKey().getCostPerLevel(book);
+                            extra += (entry.getValue() - e.getValue()) * entry.getKey().getCostPerLevel(book);
+                        }
+                        else if (e.getValue().equals(entry.getValue())) {
+                            cost += entry.getKey().getCostPerLevel(false);
+                            extra += entry.getKey().getCostPerLevel(false);
+                        }
+                        else needsCost = true;
+                        e.getKey().addToItem(item, e.getValue() > entry.getValue() ? e.getValue() : e.getValue().equals(entry.getValue()) ? Math.min(e.getValue() + 1, e.getKey().getEnchantmentLevel(50)) : entry.getValue());
+                        conflict = true;
                     }
-                    else if (e.getValue().equals(entry.getValue())) {
-                        cost += entry.getKey().getCostPerLevel(false);
-                        extra += entry.getKey().getCostPerLevel(false);
-                    }
-                    else needsCost = true;
-                    e.getKey().addToItem(item, e.getValue() > entry.getValue() ? e.getValue() : e.getValue().equals(entry.getValue()) ? Math.min(e.getValue() + 1, e.getKey().getEnchantmentLevel(50)) : entry.getValue());
-                    conflict = true;
-                }
 
-                // If the enchantment can't be added onto the target, don't add it
-                else if (e.getKey().conflictsWith(entry.getKey())) {
-                    conflict = true;
-                    needsCost = true;
+                    // If the enchantment can't be added onto the target, don't add it
+                    else if (e.getKey().conflictsWith(entry.getKey())) {
+                        conflict = true;
+                        needsCost = true;
+                    }
                 }
             }
+            else conflict = needsCost = true;
 
             // Add the enchant if there were no problems
             if (!conflict) {

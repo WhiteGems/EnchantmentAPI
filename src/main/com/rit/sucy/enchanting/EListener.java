@@ -1,7 +1,9 @@
 package com.rit.sucy.enchanting;
 
 import com.rit.sucy.CustomEnchantment;
+import com.rit.sucy.EUpdateTask;
 import com.rit.sucy.EnchantmentAPI;
+import com.rit.sucy.config.LanguageNode;
 import com.rit.sucy.service.ENameParser;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -38,7 +40,7 @@ public class EListener implements Listener {
     /**
      * Lore for unenchantable items
      */
-    static final String cantEnchant = ChatColor.DARK_RED + "Unenchantable";
+    final String cantEnchant;
 
     /**
      * Plugin reference
@@ -61,6 +63,11 @@ public class EListener implements Listener {
     Hashtable<String, ItemStack> storedItems = new Hashtable<String, ItemStack>();
 
     /**
+     * Whether or not to excuse the next player attack event
+     */
+    public static boolean excuse = false;
+
+    /**
      * Basic constructor that registers this listener
      *
      * @param plugin plugin to register this listener to
@@ -69,15 +76,20 @@ public class EListener implements Listener {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
 
+        List<String> enchantable = plugin.getConfig().getStringList(LanguageNode.TABLE_ENCHANTABLE.getFullPath());
+        List<String> unenchantable = plugin.getConfig().getStringList(LanguageNode.TABLE_UNENCHANTABLE.getFullPath());
+        cantEnchant = unenchantable.get(1).replace('&', ChatColor.COLOR_CHAR);
+
         ItemMeta meta = placeholder.getItemMeta();
-        meta.setDisplayName(ChatColor.DARK_GREEN + "Placeholder");
+        meta.setDisplayName(enchantable.get(0).replace('&', ChatColor.COLOR_CHAR));
         ArrayList<String> lore = new ArrayList<String>();
-        lore.add(ChatColor.LIGHT_PURPLE + "Enchantable");
+        lore.add(enchantable.get(1).replace('&', ChatColor.COLOR_CHAR));
         meta.setLore(lore);
         placeholder.setItemMeta(meta);
         lore.clear();
         lore.add(cantEnchant);
         meta.setLore(lore);
+        meta.setDisplayName(unenchantable.get(0).replace('&', ChatColor.COLOR_CHAR));
         placeholder2.setItemMeta(meta);
     }
 
@@ -89,38 +101,28 @@ public class EListener implements Listener {
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onHit(EntityDamageByEntityEvent event) {
 
-        // Rule out cases where enchantments don't apply
-        if (event.getDamager() == event.getEntity()) return;
-        Entity damager = event.getDamager();
-        if (damager instanceof Projectile) damager = ((Projectile) damager).getShooter();
-        if (event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK
-                && event.getCause() != EntityDamageEvent.DamageCause.PROJECTILE) return;
-        if (!(damager instanceof LivingEntity)) return;
-        if (!(event.getEntity() instanceof LivingEntity)) return;
-
-        // Apply enchantments
-        for (Map.Entry<CustomEnchantment, Integer> entry : getValidEnchantments(getItems((LivingEntity)damager)).entrySet()) {
-            entry.getKey().applyEffect((LivingEntity)damager, (LivingEntity)event.getEntity(), entry.getValue(), event);
+        if (excuse) {
+            excuse = false;
+            return;
         }
-    }
-
-    /**
-     * Event for defensive enchantments
-     *
-     * @param event the event details
-     */
-    @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onDamaged(EntityDamageByEntityEvent event) {
 
         // Rule out cases where enchantments don't apply
-        if (event.getDamager() == event.getEntity()) return;
         if (!(event.getEntity() instanceof LivingEntity)) return;
 
-        // Apply enchantments
         LivingEntity damaged = (LivingEntity)event.getEntity();
         LivingEntity damager = event.getDamager() instanceof LivingEntity ? (LivingEntity) event.getDamager()
                 : event.getDamager() instanceof Projectile ? ((Projectile)event.getDamager()).getShooter()
                 : null;
+        if (event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK
+                && event.getCause() != EntityDamageEvent.DamageCause.PROJECTILE) return;
+        if (damager != null) {
+            // Apply offensive enchantments
+            for (Map.Entry<CustomEnchantment, Integer> entry : getValidEnchantments(getItems(damager)).entrySet()) {
+                entry.getKey().applyEffect(damager, damaged, entry.getValue(), event);
+            }
+        }
+
+        // Apply defensive enchantments
         for (Map.Entry<CustomEnchantment, Integer> entry : getValidEnchantments(getItems(damaged)).entrySet()) {
             entry.getKey().applyDefenseEffect(damaged, damager, entry.getValue(), event);
         }
@@ -290,6 +292,7 @@ public class EListener implements Listener {
                 storedItems.put(event.getWhoClicked().getName(), event.getCurrentItem().clone());
                 createPlaceholder(event.getCurrentItem(), event.getCurrentItem().clone());
             }
+            new EUpdateTask(plugin, player);
         }
     }
 

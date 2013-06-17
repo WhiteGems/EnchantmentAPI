@@ -68,6 +68,7 @@ public class RootConfig extends ModularConfig
         loadSettings(plugin.getConfig());
         boundsCheck();
         loadEnchantments(plugin.getConfig());
+        loadLanguage(plugin.getConfig());
         writeConfig();
     }
 
@@ -88,6 +89,18 @@ public class RootConfig extends ModularConfig
             if (!config.contains(node.getPath()))
             {
                 config.set(node.getPath(), node.getDefaultValue());
+            }
+        }
+    }
+
+    public void loadLanguage(ConfigurationSection config) {
+        for (LanguageNode node : LanguageNode.values()) {
+            if (!config.contains(node.getFullPath()) || config.getStringList(node.getFullPath()).size() == 0) {
+                config.set(node.getFullPath(), node.getDefaultValue());
+            }
+            else if ((node == LanguageNode.TABLE_ENCHANTABLE || node == LanguageNode.TABLE_UNENCHANTABLE)
+                && config.getStringList(node.getFullPath()).size() != 2) {
+                config.set(node.getFullPath(), node.getDefaultValue());
             }
         }
     }
@@ -126,6 +139,10 @@ public class RootConfig extends ModularConfig
                             if (obj instanceof Integer)
                                 enchantment.setWeight((Integer) obj);
                             break;
+                        case GROUP:
+                            if (obj instanceof String)
+                                enchantment.setGroup(((String) obj));
+                            break;
                         default:
                             throw new UnsupportedOperationException("The node " + node.name() + " hasn't been configured yet");
                     }
@@ -137,8 +154,9 @@ public class RootConfig extends ModularConfig
     /**
      * Writes the config to file.
      * First the settings.
+     * then the custom enchantment settings.
      * then the vanilla enchantment settings.
-     * and last the custom enchantment settings.
+     * finally the language settings.
      */
     public void writeConfig ()
     {
@@ -202,6 +220,11 @@ public class RootConfig extends ModularConfig
             //Items
             if (getBoolean(RootNode.VANILLA_ITEMS))
                 out.set(path + EnchantmentNode.ITEMS.getPath(), MaterialsParser.toStringArray(enchant.getNaturalMaterials()));
+        }
+
+        for (LanguageNode node : LanguageNode.values()) {
+            String path = node.getFullPath();
+            out.set(path, config.get(path));
         }
 
         try {

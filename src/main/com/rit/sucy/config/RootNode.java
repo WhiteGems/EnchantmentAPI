@@ -21,7 +21,6 @@
 
 package com.rit.sucy.config;
 
-import com.rit.sucy.CustomEnchantment;
 import com.rit.sucy.service.ConfigNode;
 
 /**
@@ -30,21 +29,21 @@ import com.rit.sucy.service.ConfigNode;
 public enum RootNode implements ConfigNode
 {
     VANILLA_ENABLED
-            (getSettingsNode() + getVanillaNode() + "Enabled", VarType.BOOLEAN, false),
+            (getVisibleSettingsNode() + getVanillaNode() + "Enabled", VarType.BOOLEAN, true),
     VANILLA_WEIGHT
-            (getSettingsNode() + getVanillaNode() + "Weight", VarType.BOOLEAN, false),
+            (getVisibleSettingsNode() + getVanillaNode() + "Weight", VarType.BOOLEAN, true),
     VANILLA_ITEMS
-            (getSettingsNode() + getVanillaNode() + "Items", VarType.BOOLEAN, false),
+            (getVisibleSettingsNode() + getVanillaNode() + "Items", VarType.BOOLEAN, true),
     VANILLA_GROUPS
-            (getSettingsNode() + getVanillaNode() +"Groups", VarType.BOOLEAN, false),
+            (getVisibleSettingsNode() + getVanillaNode() + "Groups", VarType.BOOLEAN, true),
     CUSTOM_ENABLED
-            (getSettingsNode() + getCustomNode() + "Enabled", VarType.BOOLEAN, true),
+            (getVisibleSettingsNode() + getCustomNode() + "Enabled", VarType.BOOLEAN, true),
     CUSTOM_WEIGHT
-            (getSettingsNode() + getCustomNode() + "Weight", VarType.BOOLEAN, false),
+            (getVisibleSettingsNode() + getCustomNode() + "Weight", VarType.BOOLEAN, true),
     CUSTOM_ITEMS
-            (getSettingsNode() + getCustomNode() + "Items", VarType.BOOLEAN, false),
+            (getVisibleSettingsNode() + getCustomNode() + "Items", VarType.BOOLEAN, true),
     CUSTOM_GROUPS
-            (getSettingsNode() + getCustomNode() + "Groups", VarType.BOOLEAN, false),
+            (getVisibleSettingsNode() + getCustomNode() + "Groups", VarType.BOOLEAN, true),
     ;
 
     /**
@@ -113,7 +112,7 @@ public enum RootNode implements ConfigNode
         return "Settings.";
     }
 
-    public static String getSettingsNode() {
+    public static String getVisibleSettingsNode() {
         return "Visible Settings.";
     }
 
