@@ -302,6 +302,8 @@ public class EAnvil implements Listener {
                 inv.setItem(7, makeItem(first, second.getAmount() > 4 ? 4 : second.getAmount()));
             else if (first.getType().name().contains("IRON_") && first.getDurability() < first.getType().getMaxDurability() && second.getType() == Material.IRON_INGOT)
                 inv.setItem(7, makeItem(first, second.getAmount() > 4 ? 4 : second.getAmount()));
+            else if (first.getType().name().contains("CHAINMAIL_") && first.getDurability() < first.getType().getMaxDurability() && second.getType() == Material.IRON_INGOT)
+                inv.setItem(7, makeItem(first, second.getAmount() > 4 ? 4 : second.getAmount()));
             else if (first.getType().name().contains("GOLD_") && first.getDurability() < first.getType().getMaxDurability() && second.getType() == Material.GOLD_INGOT)
                 inv.setItem(7, makeItem(first, second.getAmount() > 4 ? 4 : second.getAmount()));
 

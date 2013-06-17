@@ -203,7 +203,7 @@ public abstract class CustomEnchantment implements Comparable<CustomEnchantment>
      * @return         cost per level
      */
     public int getCostPerLevel(boolean withBook) {
-        int costIndex = weight.get(MaterialClass.DEFAULT);
+        int costIndex = weight.get(MaterialClass.DEFAULT) * getEnchantmentLevel(49);
         int divisor = withBook ? 2 : 1;
         return
             weight.get(MaterialClass.DEFAULT) == 1 ? 8 / divisor
