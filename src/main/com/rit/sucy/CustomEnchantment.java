@@ -1,6 +1,5 @@
 package com.rit.sucy;
 
-import com.rit.sucy.config.RootNode;
 import com.rit.sucy.service.ENameParser;
 import com.rit.sucy.service.ERomanNumeral;
 import com.rit.sucy.service.MaterialClass;
@@ -15,6 +14,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
@@ -41,6 +41,11 @@ public abstract class CustomEnchantment implements Comparable<CustomEnchantment>
     protected final String enchantName;
 
     /**
+     * Description for the enchantment
+     */
+    protected String description;
+
+    /**
      * Names of all the items that can receive this enchantment at an enchanting table
      */
     protected Material [] naturalItems;
@@ -61,97 +66,146 @@ public abstract class CustomEnchantment implements Comparable<CustomEnchantment>
     protected String group;
 
     /**
-     * Creates a new custom enchantment with the given name
-     *
      * @param name enchantment name
      */
     public CustomEnchantment(String name) {
-        this(name, new Material[0]);
+        this(name, null, new Material[0], DEFAULT_GROUP, 5);
     }
 
     /**
-     * Creates a new custom enchantment with the given name that can be
-     * enchanted onto the items using an enchantment table with names
-     * given in the array.
-     *
      * @param name         the unique name of the enchantment
      * @param naturalItems the names of items that can normally have this enchantment
      * @deprecated use the constructor with Material[] instead
      */
     public CustomEnchantment(String name, String[] naturalItems) {
-        this(name, naturalItems, 5);
+        this(name, null, MaterialsParser.toMaterial(naturalItems), DEFAULT_GROUP, 5);
     }
 
     /**
-     * Creates a new custom enchantment with the given name that can be
-     * enchanted onto the items using an enchantment table with names
-     * given in the array.
-     *
      * @param name         the unique name of the enchantment
      * @param naturalItems the names of items that can normally have this enchantment
      */
     public CustomEnchantment(String name, Material[] naturalItems) {
-        this(name, naturalItems, 5);
+        this(name, null, naturalItems, DEFAULT_GROUP, 5);
     }
 
     /**
-     * Creates a new custom enchantment with the given name that can
-     * be enchanted onto the items using an enchantment table with names
-     * given in the array. The chance of this enchantment occurring is
-     * based on the weight (generally between 1 and 10, 1 being the most rare)
-     *
+     * @param name        the unique name of the enchantment
+     * @param description the brief description for the enchantment
+     */
+    public CustomEnchantment(String name, String description) {
+        this(name, description, new Material[0], DEFAULT_GROUP, 5);
+    }
+
+    /**
      * @param name         the unique name of the enchantment
      * @param naturalItems the names of items that can normally have this enchantment
      * @param weight       the weight of the enchantment
      * @deprecated use constructor with Material[] instead instead of String[]
      */
     public CustomEnchantment(String name, String[] naturalItems, int weight) {
-        this(name, MaterialsParser.toMaterial(naturalItems), DEFAULT_GROUP, weight);
+        this(name, null, MaterialsParser.toMaterial(naturalItems), DEFAULT_GROUP, weight);
     }
 
     /**
-     * Creates a new custom enchantment with the given name that can
-     * be enchanted onto the items using an enchantment table.
-     *  The chance of this enchantment occurring is
-     * based on the weight (generally between 1 and 10, 1 being the most rare)
-     *
      * @param name         the unique name of the enchantment
      * @param naturalItems the items that can normally have this enchantment
      * @param weight       the weight of the enchantment
      */
     public CustomEnchantment(String name, Material [] naturalItems, int weight) {
-        this(name, naturalItems, DEFAULT_GROUP, weight);
+        this(name, null, naturalItems, DEFAULT_GROUP, weight);
     }
 
     /**
-     * Creates a new custom enchantment with the given name that can
-     * be enchanted onto the items using an enchantment table that conflicts
-     * with other enchantments in the same group.
-     *
      * @param name         the unique name of the enchantment
      * @param naturalItems the items that can normally have this enchantment
      * @param group        the conflict group for this enchantment
      */
     public CustomEnchantment(String name, Material[] naturalItems, String group) {
-        this(name, naturalItems, group, 5);
+        this(name, null, naturalItems, group, 5);
     }
 
     /**
-     * Creates a custom enchantment with the given name that can apply to
-     * the items in the list of natural items in the enchanting table and
-     * conflicts with other enchantments in the same group.
-     *
+     * @param name         the unique name of the enchantment
+     * @param description  a brief description for the enchantment
+     * @param naturalItems the items that can normally have this enchantment
+     */
+    public CustomEnchantment(String name, String description, Material[] naturalItems) {
+        this(name, description, naturalItems, DEFAULT_GROUP, 5);
+    }
+
+    /**
+     * @param name         the unique name of the enchantment
+     * @param description  a brief description for the enchantment
+     * @param group        the group that this enchantment conflicts with
+     */
+    public CustomEnchantment(String name,  String description, String group) {
+        this (name, description, new Material[0], group, 5);
+    }
+
+    /**
+     * @param name         the unique name of the enchantment
+     * @param description  a brief description for the enchantment
+     * @param weight       the weight of this enchantment
+     */
+    public CustomEnchantment(String name, String description, int weight) {
+        this (name, description, new Material[0], DEFAULT_GROUP, 5);
+    }
+
+    /**
+     * @param name         the unique name of the enchantment
+     * @param description  a brief description for the enchantment
+     * @param naturalItems the items that can normally have this enchantment
+     * @param group        the conflict group of the enchantment
+     */
+    public CustomEnchantment(String name, String description, Material[] naturalItems, String group) {
+        this (name, description, naturalItems, group, 5);
+    }
+
+    /**
+     * @param name         the unique name of the enchantment
+     * @param description  a brief description for the enchantment
+     * @param naturalItems the items that can normally have this enchantment
+     * @param weight       the weight of this enchantment
+     */
+    public CustomEnchantment(String name, String description, Material[] naturalItems, int weight) {
+        this(name, description, naturalItems, DEFAULT_GROUP, 5);
+    }
+
+    /**
+     * @param name         the unique name of the enchantment
+     * @param description  a brief description for the enchantment
+     * @param group        the group that this enchantment conflicts with
+     * @param weight       the weight of this enchantment
+     */
+    public CustomEnchantment(String name, String description, String group, int weight) {
+        this(name, description, new Material[0], group, weight);
+    }
+
+    /**
      * @param name         the unique name of the enchantment
      * @param naturalItems the items that can normally have this enchantment
      * @param group        the group that this enchantment conflicts with
      * @param weight       the weight of this enchantment
      */
     public CustomEnchantment(String name, Material[] naturalItems, String group, int weight) {
+        this(name, null, naturalItems, group, weight);
+    }
+
+    /**
+     * @param name         the unique name of the enchantment
+     * @param description  a brief description for the enchantment
+     * @param naturalItems the items that can normally have this enchantment
+     * @param group        the group that this enchantment conflicts with
+     * @param weight       the weight of this enchantment
+     */
+    public CustomEnchantment(String name, String description, Material[] naturalItems, String group, int weight) {
         Validate.notEmpty(name, "Your Enchantment needs a name!");
         Validate.notNull(naturalItems, "Input an empty array instead of \"null\"!");
         Validate.isTrue(weight >= 0, "Weight can't be negative!");
 
         this.enchantName = name;
+        this.description = description;
         this.naturalItems = naturalItems;
         this.isEnabled = true;
         this.group = group;
@@ -167,6 +221,13 @@ public abstract class CustomEnchantment implements Comparable<CustomEnchantment>
      */
     public String name() {
         return enchantName;
+    }
+
+    /**
+     * @return enchantment description
+     */
+    public String getDescription() {
+        return description;
     }
 
     /**
@@ -484,4 +545,13 @@ public abstract class CustomEnchantment implements Comparable<CustomEnchantment>
      * @param event        the event details
      */
     public void applyEntityEffect(Player player, int enchantLevel, PlayerInteractEntityEvent event) {}
+
+    /**
+     * Applies effects when firing a projectile
+     *
+     * @param user         entity firing the projectile
+     * @param enchantLevel enchantment level
+     * @param event        the event details
+     */
+    public void applyProjectileEffect(LivingEntity user, int enchantLevel, ProjectileLaunchEvent event) { }
 }

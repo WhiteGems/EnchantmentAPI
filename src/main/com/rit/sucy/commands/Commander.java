@@ -26,14 +26,16 @@ public class Commander extends CommandHandler
     public boolean noArgs(CommandSender sender, Command command, String label)
     {
         sender.sendMessage(ChatColor.GRAY + "========= " + ChatColor.RED + plugin.getName() + ChatColor.GRAY + " =========");
-        sender.sendMessage      (" /enchantapi");
-        sender.sendMessage      ("    help    " + ChatColor.YELLOW + "- Show the help menu");
-        if (sender.hasPermission(PermissionNode.LIST.getNode()))
-            sender.sendMessage      ("    list     " + ChatColor.YELLOW + "- List all enchantments");
+        sender.sendMessage    (" /enchantapi");
+        sender.sendMessage    ("    help         " + ChatColor.YELLOW + "- Show the help menu");
+        if (sender.hasPermission(PermissionNode.LIST.getNode())) {
+            sender.sendMessage("    list          " + ChatColor.YELLOW + "- List all enchantments");
+            sender.sendMessage("    list <page> " + ChatColor.YELLOW + "- List a page of enchantments with descriptions");
+        }
         if (sender.hasPermission(PermissionNode.ADMIN.getNode()))
         {
-            sender.sendMessage  ("    reload " + ChatColor.YELLOW + "- Reload the plugin");
-            sender.sendMessage  ("    add     " + ChatColor.YELLOW + "- Add an enchantment to an item");
+            sender.sendMessage("    reload      " + ChatColor.YELLOW + "- Reload the plugin");
+            sender.sendMessage("    add          " + ChatColor.YELLOW + "- Add an enchantment to an item");
         }   //I have got no idea why it doesn't align properly
         return true;
     }
