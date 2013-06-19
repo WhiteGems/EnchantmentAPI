@@ -431,7 +431,7 @@ public abstract class CustomEnchantment implements Comparable<CustomEnchantment>
         // Add the enchantment
         metaLore.add(0, ChatColor.GRAY + enchantName + " " + ERomanNumeral.numeralOf(enchantLevel));
         meta.setLore(metaLore);
-        String name = ENameParser.getEnchantedName(item);
+        String name = ENameParser.getName(item);
         if (name != null) meta.setDisplayName(name);
         item.setItemMeta(meta);
         return item;

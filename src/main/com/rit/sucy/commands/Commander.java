@@ -20,6 +20,7 @@ public class Commander extends CommandHandler
         registerCommand("reload", new ReloadCommand());
         registerCommand("list", new EnchantListCommand());
         registerCommand("add", new AddEnchantCommand());
+        registerCommand("book", new BookCommand());
     }
 
     @Override
@@ -31,6 +32,9 @@ public class Commander extends CommandHandler
         if (sender.hasPermission(PermissionNode.LIST.getNode())) {
             sender.sendMessage("    list          " + ChatColor.YELLOW + "- List all enchantments");
             sender.sendMessage("    list <page> " + ChatColor.YELLOW + "- List a page of enchantments with descriptions");
+        }
+        if (sender.hasPermission(PermissionNode.BOOK.getNode())) {
+            sender.sendMessage("    book        " + ChatColor.YELLOW + "- Gives a book with enchantment descriptions");
         }
         if (sender.hasPermission(PermissionNode.ADMIN.getNode()))
         {

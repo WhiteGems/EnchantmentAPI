@@ -12,7 +12,11 @@ public enum PermissionNode
     /**
      * Access to a basic list command
      */
-    LIST("list");
+    LIST("list"),
+    /**
+     * Access to getting enchantment description books
+     */
+    BOOK("book");
     /**
      * Prefix for all permission nodes.
      */

@@ -20,9 +20,17 @@ commands:
         usage: /enchantapi reload
         permission: EnchantmentAPI.admin
         permission-message: You lack the privileges to use that!
+    enchantapi book:
+        description: creates a book with enchantment details
+        usage: /enchantapi book
+        permission: EnchantmentAPI.book
+        permission-message: You lack the privileges to use that!
 permissions:
     EnchantmentAPI.list:
         description: basic list of enchantments
+        default: true
+    EnchantmentAPI.book:
+        description: gives a book with enchantment descriptions
         default: true
     EnchantmentAPI.admin:
         description: applying enchantments
