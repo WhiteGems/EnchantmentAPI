@@ -1,11 +1,11 @@
-package com.rit.sucy;
+package com.rit.sucy.service;
 
 import org.apache.commons.lang.Validate;
 
 /**
  * Handles conversions between Roman Numeral Strings and integers
  */
-class ERomanNumeral {
+public class ERomanNumeral {
 
     private enum RomanNumber
     {
@@ -41,7 +41,7 @@ class ERomanNumeral {
      * @param value value to be converted
      * @return      Roman Numeral String
      */
-    static String numeralOf(int value) {
+    public static String numeralOf(int value) {
         Validate.isTrue(value > 0, "Roman numbers can't express zero or negative numbers!");
 
         StringBuilder builder = new StringBuilder();
@@ -77,7 +77,7 @@ class ERomanNumeral {
      * @param romanNumeral Roman Numeral string to parse
      * @return             integer value (0 if invalid string)
      */
-    static int getValueOf(String romanNumeral) {
+    public static int getValueOf(String romanNumeral) {
         char[] numerals = romanNumeral.toCharArray();
         int total = 0;
 
@@ -98,7 +98,7 @@ class ERomanNumeral {
      * @param numeral Roman Numeral character
      * @return        value of the character
      */
-    static int getNumeralValue(char numeral) {
+    public static int getNumeralValue(char numeral) {
         String romanNumeral = ("" + numeral).toUpperCase();
         try {
             RomanNumber romanNumber = RomanNumber.valueOf(romanNumeral);

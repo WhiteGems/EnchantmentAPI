@@ -1,6 +1,6 @@
-package com.rit.sucy;
+package com.rit.sucy.enchanting;
 
-import org.bukkit.Bukkit;
+import com.rit.sucy.CustomEnchantment;
 import org.bukkit.enchantments.Enchantment;
 
 /**
@@ -12,60 +12,60 @@ public enum VanillaData
     /**
      * ARMOR
      */
-    PROTECTION_ENVIRONMENTAL (Enchantment.PROTECTION_ENVIRONMENTAL,
-            10, new int [] {1, 15, 25, 35}),
-    PROTECTION_FALL(Enchantment.PROTECTION_FALL,
-            5,  new int [] {1, 15, 20, 25}),
-    PROTECTION_FIRE(Enchantment.PROTECTION_FIRE,
-            5,  new int [] {1, 20, 30, 35}),
-    PROTECTION_PROJECTILE(Enchantment.PROTECTION_PROJECTILE,
-            5,  new int [] {1, 15, 20, 25}),
+    PROTECTION_ENVIRONMENTAL (Enchantment.PROTECTION_ENVIRONMENTAL, "Damage_Reduction",
+            10, new int [] {1, 5, 15, 25}),
+    PROTECTION_FALL(Enchantment.PROTECTION_FALL,"Damage_Reduction",
+            5,  new int [] {1, 5, 15, 20}),
+    PROTECTION_FIRE(Enchantment.PROTECTION_FIRE, "Damage_Reduction",
+            5,  new int [] {1, 5, 15, 25}),
+    PROTECTION_PROJECTILE(Enchantment.PROTECTION_PROJECTILE, "Damage_Reduction",
+            5,  new int [] {1, 5, 15, 25}),
     WATER_WORKER(Enchantment.WATER_WORKER,
             2,  new int [] {1}),
-    PROTECTION_EXPLOSIONS(Enchantment.PROTECTION_EXPLOSIONS,
-            2,  new int [] {1, 15, 25, 30}),
+    PROTECTION_EXPLOSIONS(Enchantment.PROTECTION_EXPLOSIONS, "Damage_Reduction",
+            2,  new int [] {1, 5, 20, 25}),
     OXYGEN(Enchantment.OXYGEN,
-            2,  new int [] {1, 30, 40}),
+            2,  new int [] {1, 8, 25}),
     THORNS(Enchantment.THORNS,
-            1,  new int [] {1, 45, 65}),
+            1,  new int [] {1, 12, 30}),
 
     /**
      * WEAPONS
      */
-    DAMAGE_ALL(Enchantment.DAMAGE_ALL,
-            10, new int [] {1, 15, 25, 40, 50}),
-    DAMAGE_ARTHROPODS(Enchantment.DAMAGE_ARTHROPODS,
-            5,  new int [] {1, 20, 25, 35, 50}),
+    DAMAGE_ALL(Enchantment.DAMAGE_ALL, "Bonus_Damage",
+            10, new int [] {1, 5, 15, 25, 35}),
+    DAMAGE_ARTHROPODS(Enchantment.DAMAGE_ARTHROPODS, "Bonus_Damage",
+            5,  new int [] {1, 5, 15, 20, 32}),
     KNOCKBACK(Enchantment.KNOCKBACK,
-            5,  new int [] {1, 40}),
-    DAMAGE_UNDEAD(Enchantment.DAMAGE_UNDEAD,
-            5,  new int [] {1, 20, 25, 35, 50}),
+            5,  new int [] {1, 8}),
+    DAMAGE_UNDEAD(Enchantment.DAMAGE_UNDEAD, "Bonus_Damage",
+            5,  new int [] {1, 5, 15, 20, 32}),
     FIRE_ASPECT(Enchantment.FIRE_ASPECT,
-            2,  new int [] {1, 50}),
+            2,  new int [] {1, 5}),
     LOOT_BONUS_MOBS(Enchantment.LOOT_BONUS_MOBS,
-            2,  new int [] {1, 30, 60}),
+            2,  new int [] {1, 8, 32}),
 
     /**
      * TOOLS
      */
     DIG_SPEED(Enchantment.DIG_SPEED,
-            10, new int [] {1, 30, 40, 50, 60}),
+            10, new int [] {1, 5, 15, 25, 35}),
     DURABILITY(Enchantment.DURABILITY,
-            5,  new int [] {1, 30, 40}),
-    LOOT_BONUS_BLOCKS(Enchantment.LOOT_BONUS_BLOCKS,
-            2,  new int [] {1, 40, 50}),
-    SILK_TOUCH(Enchantment.SILK_TOUCH,
+            5,  new int [] {1, 5, 25}),
+    LOOT_BONUS_BLOCKS(Enchantment.LOOT_BONUS_BLOCKS, "Block_Modifier",
+            2,  new int [] {1, 8, 32}),
+    SILK_TOUCH(Enchantment.SILK_TOUCH, "Block_Modifier",
             1,  new int [] {1}),
 
     /**
      * BOW
      */
     ARROW_DAMAGE(Enchantment.ARROW_DAMAGE,
-            10, new int [] {1, 15, 25, 35, 45}),
+            10, new int [] {1, 5, 15, 25, 35}),
     ARROW_FIRE(Enchantment.ARROW_FIRE,
             2,  new int [] {1}),
     ARROW_KNOCKBACK(Enchantment.ARROW_KNOCKBACK,
-            2,  new int [] {1, 35}),
+            2,  new int [] {1, 8}),
     ARROW_INFINITE(Enchantment.ARROW_INFINITE,
             1,  new int [] {1}),
     ;
@@ -73,6 +73,12 @@ public enum VanillaData
      * The Enchantment id in the vanilla game
      */
     private final Enchantment enchantment;
+
+    /**
+     * The conflict group of the enchantment
+     */
+    private final String group;
+
     /**
      * The weight this enchantment has when enchants are choosen
      */
@@ -87,11 +93,24 @@ public enum VanillaData
      * Private Constructor for this enum
      *
      * @param enchantment   - The Enchantment id in the vanilla game
-     * @param enchantWeight - The weight this enchantment has when enchants are choosen
+     * @param enchantWeight - The weight this enchantment has when enchants are chosen
      * @param levels        - The value at a given index corresponds to the experience levels required to get this enchantment
      */
     private VanillaData(Enchantment enchantment, int enchantWeight, int[] levels){
+        this(enchantment, CustomEnchantment.DEFAULT_GROUP, enchantWeight, levels);
+    }
+
+    /**
+     * Private constructor for this enum
+     *
+     * @param enchantment   - The Enchantment id in the vanilla game
+     * @param group         - The conflict group of the enchantment
+     * @param enchantWeight - The weight of this enchantment has when enchants are chosen
+     * @param levels        - The value at a given index corresponds to the experience levels required to get this enchantment
+     */
+    private VanillaData(Enchantment enchantment, String group, int enchantWeight, int[] levels) {
         this.enchantment = enchantment;
+        this.group = group;
         this.enchantWeight = enchantWeight;
         this.levels = levels;
     }
@@ -112,6 +131,15 @@ public enum VanillaData
      */
     public int getEnchantWeight() {
         return enchantWeight;
+    }
+
+    /**
+     * Get the group of the enchantment
+     *
+     * @return the group of the enchant
+     */
+    public String getGroup() {
+        return group;
     }
 
     /**

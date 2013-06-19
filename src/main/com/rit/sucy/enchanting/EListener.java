@@ -1,7 +1,9 @@
-package com.rit.sucy;
+package com.rit.sucy.enchanting;
 
+import com.rit.sucy.CustomEnchantment;
+import com.rit.sucy.EnchantmentAPI;
+import com.rit.sucy.service.ENameParser;
 import org.bukkit.GameMode;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -14,24 +16,33 @@ import org.bukkit.event.enchantment.PrepareItemEnchantEvent;
 import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
+import org.bukkit.inventory.EnchantingInventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Listens for events and passes them onto enchantments
  */
-class EListener implements Listener {
+public class EListener implements Listener {
 
+    /**
+     * Plugin reference
+     */
     Plugin plugin;
+
+    /**
+     * Whether or not to excuse the next player attack event
+     */
+    public static boolean excuse = false;
 
     /**
      * Basic constructor that registers this listener
@@ -51,38 +62,28 @@ class EListener implements Listener {
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onHit(EntityDamageByEntityEvent event) {
 
-        // Rule out cases where enchantments don't apply
-        if (event.getDamager() == event.getEntity()) return;
-        Entity damager = event.getDamager();
-        if (damager instanceof Projectile) damager = ((Projectile) damager).getShooter();
-        if (event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK
-                && event.getCause() != EntityDamageEvent.DamageCause.PROJECTILE) return;
-        if (!(damager instanceof LivingEntity)) return;
-        if (!(event.getEntity() instanceof LivingEntity)) return;
-
-        // Apply enchantments
-        for (Map.Entry<CustomEnchantment, Integer> entry : getValidEnchantments(getItems((LivingEntity)damager)).entrySet()) {
-            entry.getKey().applyEffect((LivingEntity)damager, (LivingEntity)event.getEntity(), entry.getValue(), event);
+        if (excuse) {
+            excuse = false;
+            return;
         }
-    }
-
-    /**
-     * Event for defensive enchantments
-     *
-     * @param event the event details
-     */
-    @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onDamaged(EntityDamageByEntityEvent event) {
 
         // Rule out cases where enchantments don't apply
-        if (event.getDamager() == event.getEntity()) return;
         if (!(event.getEntity() instanceof LivingEntity)) return;
 
-        // Apply enchantments
         LivingEntity damaged = (LivingEntity)event.getEntity();
         LivingEntity damager = event.getDamager() instanceof LivingEntity ? (LivingEntity) event.getDamager()
                 : event.getDamager() instanceof Projectile ? ((Projectile)event.getDamager()).getShooter()
                 : null;
+        if (event.getCause() != EntityDamageEvent.DamageCause.ENTITY_ATTACK
+                && event.getCause() != EntityDamageEvent.DamageCause.PROJECTILE) return;
+        if (damager != null) {
+            // Apply offensive enchantments
+            for (Map.Entry<CustomEnchantment, Integer> entry : getValidEnchantments(getItems(damager)).entrySet()) {
+                entry.getKey().applyEffect(damager, damaged, entry.getValue(), event);
+            }
+        }
+
+        // Apply defensive enchantments
         for (Map.Entry<CustomEnchantment, Integer> entry : getValidEnchantments(getItems(damaged)).entrySet()) {
             entry.getKey().applyDefenseEffect(damaged, damager, entry.getValue(), event);
         }
@@ -219,6 +220,49 @@ class EListener implements Listener {
     @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onDisconnect(PlayerQuitEvent event) {
         EEquip.clearPlayer(event.getPlayer());
+        if (tasks.contains(event.getPlayer().getName())) {
+            tasks.remove(event.getPlayer().getName());
+        }
+    }
+
+    @EventHandler (priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onProjectile(ProjectileLaunchEvent event) {
+        for (Map.Entry<CustomEnchantment, Integer> entry : getValidEnchantments(getItems(event.getEntity().getShooter())).entrySet()) {
+            entry.getKey().applyProjectileEffect(event.getEntity().getShooter(), entry.getValue(), event);
+        }
+    }
+
+    @EventHandler
+    public void onClick(InventoryClickEvent event) {
+        if (event.getInventory().getType() == InventoryType.ENCHANTING && event.isShiftClick()) {
+            if (tasks.containsKey(event.getWhoClicked().getName())) {
+                tasks.get(event.getWhoClicked().getName()).restore();
+            }
+        }
+    }
+
+    Hashtable<String, TableTask> tasks = new Hashtable<String, TableTask>();
+    @EventHandler
+    public void onOpen(InventoryOpenEvent event) {
+        if (event.getInventory().getType() == InventoryType.ENCHANTING) {
+            tasks.put(event.getPlayer().getName(), new TableTask(plugin, plugin.getServer().getPlayer(event.getPlayer().getName())));
+        }
+    }
+
+    /**
+     * Restores any items when an enchanting table is closed
+     *
+     * @param event event details
+     */
+    @EventHandler
+    public void onClose(InventoryCloseEvent event) {
+        if (event.getInventory() instanceof EnchantingInventory) {
+            if (tasks.containsKey(event.getPlayer().getName())) {
+                tasks.get(event.getPlayer().getName()).restore();
+                tasks.get(event.getPlayer().getName()).cancel();
+                tasks.remove(event.getPlayer().getName());
+            }
+        }
     }
 
     /**
@@ -234,7 +278,14 @@ class EListener implements Listener {
                 && event.getEnchanter().getGameMode() != GameMode.CREATIVE) return;
 
         event.getInventory().clear();
-        event.getInventory().addItem(EEnchantTable.enchant(event.getItem(), event.getExpLevelCost(), event));
+        event.getEnchantsToAdd().clear();
+        ItemStack storedItem = tasks.get(event.getEnchanter().getName()).stored;
+        if (storedItem.getAmount() > 1) {
+            storedItem.setAmount(storedItem.getAmount() - 1);
+            event.getEnchanter().getInventory().addItem(storedItem.clone());
+            storedItem.setAmount(1);
+        }
+        event.getInventory().addItem(EEnchantTable.enchant(storedItem, event.getExpLevelCost()));
         if (event.getEnchanter().getGameMode() != GameMode.CREATIVE)
             event.getEnchanter().setLevel(event.getEnchanter().getLevel() - event.getExpLevelCost());
     }
@@ -248,7 +299,10 @@ class EListener implements Listener {
     public void onPrepareEnchant(PrepareItemEnchantEvent event) {
         if (EnchantmentAPI.getEnchantments(event.getItem()).size() > 0) {
             event.setCancelled(true);
-            return;
+        }
+        if (event.getItem().hasItemMeta() && event.getItem().getItemMeta().hasLore()
+                && event.getItem().getItemMeta().getLore().contains(tasks.get(event.getEnchanter().getName()).cantEnchant)) {
+            event.setCancelled(true);
         }
     }
 
