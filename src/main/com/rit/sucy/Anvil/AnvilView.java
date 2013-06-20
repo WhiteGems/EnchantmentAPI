@@ -34,13 +34,6 @@ public interface AnvilView
     public int getInputSlotID(int input);
 
     /**
-     * Set the Items currently in the inputSlots
-     *
-     * @param input the input items
-     */
-    public void setInputSlots (ItemStack[] input);
-
-    /**
      * Set the item in the resultSlot
      *
      * @param result the resulting item

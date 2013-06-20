@@ -103,23 +103,6 @@ public class CustomAnvil implements AnvilView, Listener {
     }
 
     /**
-     * Sets the input slots to the given items
-     *
-     * @param items new input
-     */
-    @Override
-    public void setInputSlots(ItemStack[] items) {
-        if (items.length > 2)
-            throw new IllegalArgumentException("Invalid input content size: must be less than 3");
-
-        if (items.length > 0) anvil.setItem(1, items[0]);
-        else anvil.setItem(1, null);
-
-        if (items.length > 1) anvil.setItem(2, items[1]);
-        else anvil.setItem(2, null);
-    }
-
-    /**
      * Sets the result slot to the target item
      *
      * @param item result

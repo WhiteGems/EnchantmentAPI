@@ -37,13 +37,19 @@ public class AnvilListener implements Listener {
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK && event.getClickedBlock().getType() == Material.ANVIL) {
-            event.setCancelled(true);
             Player player = event.getPlayer();
 
-            // TODO add craftbukkit inventory
-
-            CustomAnvil anvil = new CustomAnvil(plugin, player);
-            views.put(player.getName(), anvil);
+            try{
+                MainAnvil anvil = new MainAnvil(plugin, player);
+                views.put(player.getName(), anvil);
+            }
+            catch (Exception e) {
+                event.setCancelled(true);
+                plugin.getLogger().info("-.- it broke already");
+                e.printStackTrace();
+                CustomAnvil anvil = new CustomAnvil(plugin, player);
+                views.put(player.getName(), anvil);
+            }
         }
     }
 
@@ -71,6 +77,8 @@ public class AnvilListener implements Listener {
 
         // Make sure the inventory is the custom inventory
         if (views.containsKey(player.getName())) {
+            if (views.get(player.getName()) instanceof MainAnvil)
+                ((MainAnvil) views.get(player.getName())).setInv(event.getInventory());
             if (views.get(player.getName()).getInventory().getName().equals(event.getInventory().getName())) {
                 AnvilView view = views.get(player.getName());
                 ItemStack[] inputs = view.getInputSlots();
@@ -85,10 +93,11 @@ public class AnvilListener implements Listener {
                         AnvilMechanics.updateResult(view, items);
                     }
 
-                        // Shift-clicking out the end-product will cost the player and consume the components
-                    else if (event.getRawSlot() == view.getResultSlotID() && view.getResultSlot() != null && view.getResultSlot().getType() != Material.AIR) {
-                        if (player.getGameMode() != GameMode.CREATIVE && (view.getRepairCost() > player.getLevel() || view.getRepairCost() >= 40))
+                    // Shift-clicking out the end-product will cost the player and consume the components
+                    else if (event.getRawSlot() == view.getResultSlotID() && isFilled(view.getResultSlot())) {
+                        if (player.getGameMode() != GameMode.CREATIVE && (view.getRepairCost() > player.getLevel() || view.getRepairCost() >= 40)) {
                             event.setCancelled(true);
+                        }
                         else {
                             view.clearInputs();
                             if (player.getGameMode() != GameMode.CREATIVE)
@@ -101,17 +110,17 @@ public class AnvilListener implements Listener {
                         event.setCancelled(true);
                     }
 
-                        // Don't allow shift clicking into the product slot
-                    else if (inputs[0] != null && inputs[1] != null) {
+                    // Don't allow shift clicking into the product slot
+                    else if (areFilled(inputs[0], inputs[1])) {
                         event.setCancelled(true);
                     }
 
-                        // Update the product slot when needed
-                    else if (inputs[0] != null) {
+                    // Update the product slot when needed
+                    else if (isFilled(inputs[0])) {
                         ItemStack[] items = view.getInputSlots(view.getInputSlotID(2), event.getCurrentItem());
                         AnvilMechanics.updateResult(view, items);
                     }
-                    else if (inputs[1] != null) {
+                    else if (isFilled(inputs[1])) {
                         ItemStack[] items = view.getInputSlots(view.getInputSlotID(1), event.getCurrentItem());
                         AnvilMechanics.updateResult(view, items);
                     }
@@ -119,16 +128,18 @@ public class AnvilListener implements Listener {
                 else if (event.isLeftClick()) {
 
                     // update the product slot if the components are changed
-                    if (event.getRawSlot() == 1)
+                    if (event.getRawSlot() == view.getInputSlotID(1)) {
                         AnvilMechanics.updateResult(view, view.getInputSlots(view.getInputSlotID(1), event.getCursor()));
-                    else if (event.getRawSlot() == 2)
+                    }
+                    else if (event.getRawSlot() == view.getInputSlotID(2)) {
                         AnvilMechanics.updateResult(view, view.getInputSlots(view.getInputSlotID(2), event.getCursor()));
+                    }
 
                         // Same as shift-clicking out the product
-                    else if (event.getRawSlot() == view.getResultSlotID() && event.getCursor().getType() == Material.AIR
-                            && view.getResultSlot() != null && view.getResultSlot().getType() != Material.AIR) {
-                        if (player.getGameMode() != GameMode.CREATIVE && (view.getRepairCost() > player.getLevel() || view.getRepairCost() >= 40))
+                    else if (event.getRawSlot() == view.getResultSlotID() && !isFilled(event.getCursor()) && isFilled(view.getResultSlot())) {
+                        if (player.getGameMode() != GameMode.CREATIVE && (view.getRepairCost() > player.getLevel() || view.getRepairCost() >= 40)) {
                             event.setCancelled(true);
+                        }
                         else {
                             view.clearInputs();
                             if (player.getGameMode() != GameMode.CREATIVE)
@@ -137,13 +148,22 @@ public class AnvilListener implements Listener {
                     }
 
                     // Don't allow clicks in other slots of the anvil
-                    else if (top)
+                    else if (top) {
                         event.setCancelled(true);
+                    }
                 }
 
                 // Update the inventory manually after the click has happened
-                new EUpdateTask(plugin, player);
+                //new EUpdateTask(plugin, player);
             }
         }
+    }
+
+    private boolean isFilled(ItemStack item) {
+        return item != null && item.getType() != Material.AIR;
+    }
+
+    private boolean areFilled(ItemStack item1, ItemStack item2) {
+        return isFilled(item1) && isFilled(item2);
     }
 }

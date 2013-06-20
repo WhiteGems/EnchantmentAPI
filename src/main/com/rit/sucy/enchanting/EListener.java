@@ -26,6 +26,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.EnchantingInventory;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -238,6 +239,7 @@ public class EListener implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
+        Inventory inv = event.getInventory();
         if (event.getInventory().getType() == InventoryType.ENCHANTING && event.isShiftClick()) {
             if (tasks.containsKey(event.getWhoClicked().getName())) {
                 tasks.get(event.getWhoClicked().getName()).restore();
