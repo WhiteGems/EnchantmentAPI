@@ -2,7 +2,10 @@ package com.rit.sucy.enchanting;
 
 import com.rit.sucy.CustomEnchantment;
 import com.rit.sucy.EnchantmentAPI;
+import com.rit.sucy.config.RootConfig;
+import com.rit.sucy.config.RootNode;
 import com.rit.sucy.service.ENameParser;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
@@ -23,6 +26,7 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.EnchantingInventory;
+import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -37,7 +41,7 @@ public class EListener implements Listener {
     /**
      * Plugin reference
      */
-    Plugin plugin;
+    EnchantmentAPI plugin;
 
     /**
      * Whether or not to excuse the next player attack event
@@ -49,7 +53,7 @@ public class EListener implements Listener {
      *
      * @param plugin plugin to register this listener to
      */
-    public EListener(Plugin plugin) {
+    public EListener(EnchantmentAPI plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
     }
@@ -284,6 +288,15 @@ public class EListener implements Listener {
             storedItem.setAmount(storedItem.getAmount() - 1);
             event.getEnchanter().getInventory().addItem(storedItem.clone());
             storedItem.setAmount(1);
+        }
+        if (plugin.getModuleForClass(RootConfig.class).getBoolean(RootNode.ITEM_LORE)) {
+            String randomName = "" + ChatColor.COLOR_CHAR;
+            int random = (int)(Math.random() * 14) + 49;
+            if (random > 57) random += 39;
+            randomName += (char)random + plugin.getAdjective() + " " + plugin.getWeapon(storedItem.getType().name()) + " of " + plugin.getSuffix();
+            ItemMeta meta = storedItem.hasItemMeta() ? storedItem.getItemMeta() : plugin.getServer().getItemFactory().getItemMeta(storedItem.getType());
+            meta.setDisplayName(randomName);
+            storedItem.setItemMeta(meta);
         }
         event.getInventory().addItem(EEnchantTable.enchant(storedItem, event.getExpLevelCost()));
         if (event.getEnchanter().getGameMode() != GameMode.CREATIVE)

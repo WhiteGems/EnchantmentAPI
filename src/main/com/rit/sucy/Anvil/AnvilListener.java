@@ -55,9 +55,8 @@ public class AnvilListener implements Listener {
     @EventHandler
     public void onClose(InventoryCloseEvent event) {
         if (views.containsKey(event.getPlayer().getName())) {
-            if (event.getInventory() == views.get(event.getPlayer().getName()).getInventory()) {
-                views.get(event.getPlayer().getName()).close();
-            }
+            views.get(event.getPlayer().getName()).close();
+            views.remove(event.getPlayer().getName());
         }
     }
 

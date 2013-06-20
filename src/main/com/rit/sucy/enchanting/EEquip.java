@@ -66,10 +66,12 @@ public class EEquip extends BukkitRunnable {
         ItemStack[] previous = equipment.get(player.getName());
         try{
             for (int i = 0; i < equips.length; i++) {
-                if (equips[i] == null && previous[i] != null)
+                if (equips[i] == null && (previous != null && previous[i] != null))
                     doUnequip(previous[i]);
-                else if (equips[i] != null && previous[i] == null)
+                else if (equips[i] != null && (previous == null || previous[i] == null))
                     doEquip(equips[i]);
+                else if (previous == null)
+                    /* do nothing */ ;
                 else if (!equips[i].toString().equalsIgnoreCase(previous[i].toString())) {
                     doEquip(equips[i]);
                     doUnequip(previous[i]);
