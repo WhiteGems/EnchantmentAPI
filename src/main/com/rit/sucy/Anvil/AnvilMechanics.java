@@ -2,13 +2,15 @@ package com.rit.sucy.Anvil;
 
 import com.rit.sucy.CustomEnchantment;
 import com.rit.sucy.EnchantmentAPI;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
 
 /**
- * Custom implementation of anvil mechanics to accomodate for custom enchantments
+ * Custom implementation of anvil mechanics to accommodate for custom enchantments
  */
 public class AnvilMechanics {
 
@@ -24,14 +26,7 @@ public class AnvilMechanics {
         put("DIAMOND_", Material.DIAMOND);
     }};
 
-    /**
-     * Updates the result slot of the anvil when the inputs are changed
-     *
-     * @param view  anvil inventory
-     * @param input input items
-     */
-    public static void updateResult(AnvilView view, ItemStack[] input) {
-
+    public static void updateResult(AnvilView view, ItemStack[] input, String name) {
         if (input.length < 2) {
             view.setResultSlot(null);
             return;
@@ -40,8 +35,29 @@ public class AnvilMechanics {
         ItemStack first = input[0];
         ItemStack second = input[1];
 
+        // Result if one is missing and the text differs
+        if (isFilled(first) && !isFilled(second) && name != null) {
+            ItemStack result = first.clone();
+            ItemMeta meta = result.getItemMeta() == null ? Bukkit.getItemFactory().getItemMeta(result.getType()) : result.getItemMeta();
+            meta.setDisplayName(name);
+            result.setItemMeta(meta);
+            view.setResultSlot(result);
+            int cost = getBaseCost(first, false) + (first.getType().getMaxDurability() != 0 ? 7 : 5 * first.getAmount());
+            view.setRepairCost(cost > 39 ? 39 : cost);
+        }
+
+        else if (!isFilled(first) && isFilled(second) && name != null) {
+            ItemStack result = second.clone();
+            ItemMeta meta = result.getItemMeta() == null ? Bukkit.getItemFactory().getItemMeta(result.getType()) : result.getItemMeta();
+            meta.setDisplayName(name);
+            result.setItemMeta(meta);
+            view.setResultSlot(result);
+            int cost = getBaseCost(first, false) + (first.getType().getMaxDurability() != 0 ? 7 : 5 * first.getAmount());
+            view.setRepairCost(cost > 39 ? 39 : cost);
+        }
+
         // No result if one is missing
-        if (first == null || second == null || first.getType() == Material.AIR || second.getType() == Material.AIR)
+        else if (first == null || second == null || first.getType() == Material.AIR || second.getType() == Material.AIR)
             view.setResultSlot(null);
 
             // If they are different items, only special cases work
@@ -85,14 +101,24 @@ public class AnvilMechanics {
             view.setRepairCost(getCombineCost(first, second));
         }
 
-            // If they are missing durability, make the output fix them
+        // If they are missing durability, make the output fix them
         else if (first.getDurability() > 0 && second.getDurability() > 0) {
             view.setResultSlot(makeItem(first, second));
             view.setRepairCost(getCombineCost(first, second));
         }
 
-            // No result needed
+        // No result needed
         else view.setResultSlot(null);
+    }
+
+    /**
+     * Updates the result slot of the anvil when the inputs are changed
+     *
+     * @param view  anvil inventory
+     * @param input input items
+     */
+    public static void updateResult(AnvilView view, ItemStack[] input) {
+        updateResult(view, input, null);
     }
 
     /**
@@ -306,6 +332,10 @@ public class AnvilMechanics {
 
         // Return the item
         return item;
+    }
+
+    static boolean isFilled(ItemStack item) {
+        return item != null && item.getType() != Material.AIR;
     }
 
     /**

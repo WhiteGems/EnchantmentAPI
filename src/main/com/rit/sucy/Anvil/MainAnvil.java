@@ -2,6 +2,8 @@ package com.rit.sucy.Anvil;
 
 import net.minecraft.server.v1_5_R3.ContainerAnvil;
 import net.minecraft.server.v1_5_R3.ContainerAnvilInventory;
+import net.minecraft.server.v1_5_R3.EntityHuman;
+import net.minecraft.server.v1_5_R3.IInventory;
 import org.bukkit.craftbukkit.v1_5_R3.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_5_R3.inventory.CraftInventoryAnvil;
 import org.bukkit.craftbukkit.v1_5_R3.inventory.CraftItemStack;
@@ -32,6 +34,46 @@ public class MainAnvil implements AnvilView {
         }
         catch (Exception e) {
             // -.-
+        }
+    }
+
+    /**
+     * Retrieves the text from the anvil name field
+     *
+     * @return name field text
+     */
+    public String getNameText() {
+        try {
+            // Gross
+            Field textField = ContainerAnvil.class.getDeclaredField("m");
+            textField.setAccessible(true);
+            String name = (String)textField.get(anvil);
+            if (name == null)
+                return null;
+
+            // More gross
+            Field g = ContainerAnvil.class.getDeclaredField("g");
+            g.setAccessible(true);
+            net.minecraft.server.v1_5_R3.ItemStack item = ((IInventory)g.get(anvil)).getItem(0);
+            if (item == null)
+                return null;
+
+            // Disgusting
+            Field n = ContainerAnvil.class.getDeclaredField("n");
+            n.setAccessible(true);
+            if (name.equalsIgnoreCase(((EntityHuman)n.get(anvil)).getLocale().c(item.a())))
+                return null;
+
+            // Much better
+            else if (name.equals(item.getName()))
+                return null;
+
+            // Finally, we're done T_T
+            return name;
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 

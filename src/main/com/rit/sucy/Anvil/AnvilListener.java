@@ -84,14 +84,7 @@ public class AnvilListener implements Listener {
 
                 if (event.isShiftClick()) {
 
-                    // Shift-clicking out one of the components will clear the end-product if there was one
-                    if (view.isInputSlot(event.getRawSlot())) {
-                        ItemStack[] items = view.getInputSlots(event.getSlot(), null);
-                        AnvilMechanics.updateResult(view, items);
-                    }
-
-                    // Shift-clicking out the end-product will cost the player and consume the components
-                    else if (event.getRawSlot() == view.getResultSlotID() && isFilled(view.getResultSlot())) {
+                    if (event.getRawSlot() == view.getResultSlotID() && isFilled(view.getResultSlot())) {
                         if (player.getGameMode() != GameMode.CREATIVE && (view.getRepairCost() > player.getLevel() || view.getRepairCost() >= 40)) {
                             event.setCancelled(true);
                         }
@@ -103,37 +96,19 @@ public class AnvilListener implements Listener {
                     }
 
                     // Don't allow clicking in other slots in the anvil
-                    else if (top) {
+                    else if (top && !view.isInputSlot(event.getSlot())) {
                         event.setCancelled(true);
                     }
 
                     // Don't allow shift clicking into the product slot
-                    else if (areFilled(inputs[0], inputs[1])) {
+                    else if (!top && areFilled(inputs[0], inputs[1])) {
                         event.setCancelled(true);
-                    }
-
-                    // Update the product slot when needed
-                    else if (isFilled(inputs[0])) {
-                        ItemStack[] items = view.getInputSlots(view.getInputSlotID(2), event.getCurrentItem());
-                        AnvilMechanics.updateResult(view, items);
-                    }
-                    else if (isFilled(inputs[1])) {
-                        ItemStack[] items = view.getInputSlots(view.getInputSlotID(1), event.getCurrentItem());
-                        AnvilMechanics.updateResult(view, items);
                     }
                 }
                 else if (event.isLeftClick()) {
 
-                    // update the product slot if the components are changed
-                    if (event.getRawSlot() == view.getInputSlotID(1)) {
-                        AnvilMechanics.updateResult(view, view.getInputSlots(view.getInputSlotID(1), event.getCursor()));
-                    }
-                    else if (event.getRawSlot() == view.getInputSlotID(2)) {
-                        AnvilMechanics.updateResult(view, view.getInputSlots(view.getInputSlotID(2), event.getCursor()));
-                    }
-
-                        // Same as shift-clicking out the product
-                    else if (event.getRawSlot() == view.getResultSlotID() && !isFilled(event.getCursor()) && isFilled(view.getResultSlot())) {
+                    // Same as shift-clicking out the product
+                    if (event.getRawSlot() == view.getResultSlotID() && !isFilled(event.getCursor()) && isFilled(view.getResultSlot())) {
                         if (player.getGameMode() != GameMode.CREATIVE && (view.getRepairCost() > player.getLevel() || view.getRepairCost() >= 40)) {
                             event.setCancelled(true);
                         }
@@ -145,7 +120,7 @@ public class AnvilListener implements Listener {
                     }
 
                     // Don't allow clicks in other slots of the anvil
-                    else if (top) {
+                    else if (top && !view.isInputSlot(event.getSlot())) {
                         event.setCancelled(true);
                     }
                 }
