@@ -1,17 +1,14 @@
 package com.rit.sucy.Anvil;
 
-import com.rit.sucy.EUpdateTask;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
@@ -72,14 +69,16 @@ public class AnvilListener implements Listener {
      * @param event event details
      */
     @EventHandler
-    public void onClick(InventoryClickEvent event) {
-        Player player = plugin.getServer().getPlayer(event.getWhoClicked().getName());
+    public void onClick(final InventoryClickEvent event) {
+        final Player player = event.getWhoClicked() instanceof Player ? (Player)event.getWhoClicked() : null;
 
         // Make sure the inventory is the custom inventory
-        if (views.containsKey(player.getName())) {
+        if (player != null && views.containsKey(player.getName()))
+        {
             if (views.get(player.getName()) instanceof MainAnvil)
                 ((MainAnvil) views.get(player.getName())).setInv(event.getInventory());
-            if (views.get(player.getName()).getInventory().getName().equals(event.getInventory().getName())) {
+            if (views.get(player.getName()).getInventory().getName().equals(event.getInventory().getName()))
+            {
                 AnvilView view = views.get(player.getName());
                 ItemStack[] inputs = view.getInputSlots();
                 boolean top = event.getRawSlot() < view.getInventory().getSize();
@@ -135,7 +134,7 @@ public class AnvilListener implements Listener {
                         AnvilMechanics.updateResult(view, view.getInputSlots(view.getInputSlotID(2), event.getCursor()));
                     }
 
-                        // Same as shift-clicking out the product
+                    // Same as shift-clicking out the product
                     else if (event.getRawSlot() == view.getResultSlotID() && !isFilled(event.getCursor()) && isFilled(view.getResultSlot())) {
                         if (player.getGameMode() != GameMode.CREATIVE && (view.getRepairCost() > player.getLevel() || view.getRepairCost() >= 40)) {
                             event.setCancelled(true);
@@ -152,9 +151,6 @@ public class AnvilListener implements Listener {
                         event.setCancelled(true);
                     }
                 }
-
-                // Update the inventory manually after the click has happened
-                //new EUpdateTask(plugin, player);
             }
         }
     }

@@ -62,13 +62,17 @@ public class MainAnvil implements AnvilView {
     }
 
     @Override
-    public void setResultSlot(ItemStack result) {
-        if (result == null) {
-            inv.getResultInventory().setItem(0, null);
-        }
-        else
-            inv.getResultInventory().setItem(0, CraftItemStack.asNMSCopy(result));
-        ((CraftPlayer) player).getHandle().setContainerData(anvil, 0, anvil.a);
+    public void setResultSlot(final ItemStack result) {
+        plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                if (result == null)
+                    inv.getResultInventory().setItem(0, null);
+                else
+                    inv.getResultInventory().setItem(0, CraftItemStack.asNMSCopy(result));
+                ((CraftPlayer) player).getHandle().setContainerData(anvil, 0, anvil.a);
+            }
+        });
     }
 
     @Override
@@ -82,15 +86,20 @@ public class MainAnvil implements AnvilView {
     }
 
     @Override
-    public void setRepairCost(int repairCost) {
+    public void setRepairCost(final int repairCost) {
         this.repairCost = repairCost;
-        try {
-            anvil.a = repairCost;
-            ((CraftPlayer) player).getHandle().setContainerData(anvil, 0, anvil.a);
-        }
-        catch (Exception e){
-            e.printStackTrace();
-        }
+        plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    anvil.a = repairCost;
+                    ((CraftPlayer) player).getHandle().setContainerData(anvil, 0, anvil.a);
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
@@ -110,9 +119,14 @@ public class MainAnvil implements AnvilView {
 
     @Override
     public void clearInputs() {
-        inv.getIngredientsInventory().setItem(0, null);
-        inv.getIngredientsInventory().setItem(1, null);
-        ((CraftPlayer) player).getHandle().setContainerData(anvil, 0, anvil.a);
+        plugin.getServer().getScheduler().runTask(plugin, new Runnable() {
+            @Override
+            public void run() {
+                inv.getIngredientsInventory().setItem(0, null);
+                inv.getIngredientsInventory().setItem(1, null);
+                ((CraftPlayer) player).getHandle().setContainerData(anvil, 0, anvil.a);
+            }
+        });
     }
 
     @Override
