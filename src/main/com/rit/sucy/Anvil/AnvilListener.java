@@ -5,14 +5,11 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
@@ -38,17 +35,19 @@ public class AnvilListener implements Listener {
     @EventHandler
     public void onOpen(InventoryOpenEvent event) {
 
-        Player player = plugin.getServer().getPlayer(event.getPlayer().getName());
+        if (event.getInventory().getType() == InventoryType.ANVIL) {
+            Player player = plugin.getServer().getPlayer(event.getPlayer().getName());
 
-        try{
-            MainAnvil anvil = new MainAnvil(plugin, event.getInventory(), player);
-            tasks.put(player.getName(), new AnvilTask(plugin, anvil));
-        }
-        catch (Exception e) {
-            event.setCancelled(true);
-            e.printStackTrace();
-            CustomAnvil anvil = new CustomAnvil(plugin, player);
-            tasks.put(player.getName(), new AnvilTask(plugin, anvil));
+            try{
+                MainAnvil anvil = new MainAnvil(plugin, event.getInventory(), player);
+                tasks.put(player.getName(), new AnvilTask(plugin, anvil));
+            }
+            catch (Exception e) {
+                event.setCancelled(true);
+                e.printStackTrace();
+                CustomAnvil anvil = new CustomAnvil(plugin, player);
+                tasks.put(player.getName(), new AnvilTask(plugin, anvil));
+            }
         }
     }
 
