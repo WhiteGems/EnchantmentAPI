@@ -20,15 +20,10 @@ public class MainAnvil implements AnvilView {
     ContainerAnvil anvil;
     int repairCost;
 
-    public MainAnvil(Plugin plugin, Player player) {
+    public MainAnvil(Plugin plugin, Inventory anvil, Player player) {
         this.player = player;
         this.plugin = plugin;
 
-        // Run a random nms script to make sure its working
-        CraftItemStack.asCraftMirror(new net.minecraft.server.v1_5_R3.ItemStack(1, 1, 1));
-    }
-
-    public void setInv(Inventory anvil) {
         inv = (CraftInventoryAnvil)anvil;
         try {
             Field container = ContainerAnvilInventory.class.getDeclaredField("a");
