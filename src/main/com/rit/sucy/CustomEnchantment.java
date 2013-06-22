@@ -36,6 +36,12 @@ public abstract class CustomEnchantment implements Comparable<CustomEnchantment>
     public static final String DEFAULT_GROUP = "Default";
 
     /**
+     * List of suffix groups this enchantment takes from
+     * Takes from all lists if no groups are added
+     */
+    protected List<String> suffixGroups = new ArrayList<String>();
+
+    /**
      * Name of the enchantment
      */
     protected final String enchantName;
@@ -255,6 +261,13 @@ public abstract class CustomEnchantment implements Comparable<CustomEnchantment>
      */
     public int getEnchantmentLevel(int expLevel) {
         return 1;
+    }
+
+    /**
+     * @return suffix groups this enchantment pulls from
+     */
+    public List<String> getSuffixGroups() {
+        return suffixGroups;
     }
 
     /**

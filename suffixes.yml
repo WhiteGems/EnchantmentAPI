@@ -1,209 +1,269 @@
-suffixes:
-- Absorption
-- Aggression
-- Arbitration
-- Awakening
-- Awe
-- Berserking
-- Betrayal
-- Blasphemy
-- Brutality
-- Chills
-- Combat
-- Death
-- Distortion
-- Divinity
-- Doom
-- Electricity
-- Energy
-- Flames
-- Godliness
-- Gravity
-- Hatred
-- Heaven
-- Hell
-- Hostility
-- Hunting
-- Ice
-- Joy
-- Killing
-- Laughter
-- Lightning
-- Minecraft
-- Mystery
-- Mythology
-- Nobility
-- Oblivion
-- Omens
-- Paranoia
-- PvP
-- Quickness
-- Resilience
-- Revenge
-- Scripture
-- Serenity
-- the Acclaimed
-- the Acrobat
-- the Ages
-- the Ancestor
-- the Angel
-- the Ant
-- the Archangel
-- the Archer
-- the Arctic
-- the Armadillo
-- the Artisan
-- the Assassin
-- the Athlete
-- the Avenged
-- the Axeman
-- the Bahamut
-- the Barbarian
-- the Bear
-- the Beastmaster
-- the Berserker
-- the Bishop
-- the Bowman
-- the Breeder
-- the Bull
-- the Butterfly
-- the Captain
-- the Caretaker
-- the Castle
-- the Cat
-- the Caterpillar
-- the Cleric
-- the Cobra
-- the Cold
-- the Collector
-- the Conjurer
-- the Commander
-- the Cowboy
-- the Crypt
-- the Cultivist
-- the Day
+blinding:
+- Blinding
+- Blindness
+- Impairing
+- Obstruction
+- Sight-Impairing
+- Sight-Obstruction
+- the Blind
 - the Daybreaker
-- the Deacon
-- the Deer
-- the Doctor
-- the Dog
+- the Mole
+- Vision-Impairing
+defense:
+- Armour
+- Durability
+- Fortification
+- Hardiness
+- Imperviousness
+- Protection
+- Tanking
+- the Castle
+- the Fortress
+- the Soldier
+- the Turtle
+digging:
+- Digging
+- Efficiency
+- Landscaping
+- Mining
+- the Digger
+- the Laborer
+- the Landscaper
+- the Miner
+- the Servant
+- the Worker
+- the Tunneler
+- Tunneling
+durability:
+- Durability
+- Eternity
+- Lasting
+- Resisting
+- the Craftsman
+- the Eternal
+- the Master Crafter
+explosions:
+- Bombing
+- Detonation
+- Explosions
+- Imploding
+- Nuking
+- the Bomber
+- TNT
+fire:
+- Ashes
+- Burning
+- Cinders
+- Fire
+- Flames
+- Flares
+- Heat
+- Heating
+- Lava
 - the Dragon
 - the Drake
-- the Druid
-- the Eagle
 - the Elementalist
-- the Estranged
-- the Expert
-- the Falcon
-- the Fallen
-- the Fighter
-- the Fool
-- the Forcemaster
-- the Fort
-- the Fox
-- the Gallows
-- the Gladiator
-- the Golem
-- the Grandmaster
-- the Graverobber
-- the Guardian
-- the Gunman
-- the Gunner
-- the Gunslinger
-- the Gymnast
 - the Hellbringer
-- the Hero
-- the Hunter
-- the Illusionist
-- the Imperial
-- the Jeweler
-- the Keeper
-- the Killer
-- the King
-- the Knight
-- the Lancer
-- the Lion
-- the Longshot
-- the Lord
-- the Lynx
 - the Mage
-- the Maiden
-- the Marksman
-- the Marshall
 - the Martyr
-- the Master
-- the Mercenary
-- the Merchant
-- the Monk
-- the Necromancer
-- the Night
-- the Ninja
-- the Nocturne
-- the Ocean
-- the Odyssey
-- the Oracle
-- the Orangutan
-- the Ordinary
-- the Owl
-- the Ox
-- the Paladin
-- the Paranormal
-- the Penguin
-- the Pigeon
-- the Pirate
-- the Plague
-- the Poor
-- the Predator
-- the Priest
-- the Prophet
-- the Quick
-- the Ranger
-- the Raptor
-- the Rifleman
-- the Rogue
-- the Rooster
-- the Sage
-- the Samurai
-- the Scout
-- the Sensei
-- the Serpent
-- the Shaman
-- the Snake
-- the Soldier
-- the Spellslinger
-- the Summoner
-- the Swordsman
-- the Tamer
-- the Therapist
-- the Tiger
-- the Trainer
-- the Trapmster
-- the Trickster
-- the Unknown
-- the Valkyrie
-- the Veteran
-- the Viking
-- the Viper
-- the Void
+- the Phoenix
+- the Sun
 - the Volcano
-- the Warden
-- the Warlock
-- the Warrior
-- the Werebeast
-- the Witch
-- the Wizard
-- the Whale
 - the Wyrm
-- the Young
-- the Zombie
-- Time
-- Tranquility
-- Trapping
-- Ubiquity
-- Vanishing
-- Violence
 - War
-- Warmth
-- Xenon
-- Yawning
-- Zapping
+force:
+- Dynamics
+- Energy
+- Force
+- Gravity
+- Motion
+- Moving
+- Physics
+- Pressure
+- Pulling
+- Pushing
+- Telekinesis
+- the Forcemaster
+- the Jedi
+- the Unknown
+- Turbulence
+health:
+- Generosity
+- Hospitality
+- Life
+- Liveliness
+- Regeneration
+- Stamina
+- Tanking
+- the Ancestor
+- the Bishop
+- the Cleric
+- the Deacon
+- the Paladin
+- the Tank
+- Vitality
+invisibility:
+- Cloaking
+- Darkness
+- Mystery
+- Shrouding
+- the Assassin
+- the Estranged
+- the Ninja
+jumping:
+- Acrobatics
+- Gymnastics
+- Jumping
+- the Acrobat
+- the Frog
+- the Gazelle
+- the Gymnast
+- the Ninja
+life-steal:
+- Draining
+- Feasting
+- Leeching
+- Sapping
+- the Cannibal
+- the Necromancer
+- the Undead
+- the Vampire
+- Vampirism
+loot:
+- Collecting
+- Fortune
+- Gambling
+- Loot
+- Luck
+- Money
+- the Aristocrat
+- the Bourgeoisie
+- the Casino
+- the Collector
+- the Gambler
+- the Merchant
+- the Noble
+night-vision:
+- Clarity
+- Night Vision
+- Seeing
+- the Bat
+- the Cat
+- the Cheetah
+- the Jaguar
+- the Lion
+- the Lynx
+- the Night
+- the Owl
+- the Tiger
+- the Werebeast
+- the Wolf
+- Vision
+poison:
+- Death
+- Dying
+- Poison
+- the Assassin
+- the Chemist
+- the Cobra
+- the Rogue
+- the Spider
+- the Tarantula
+- the Viper
+- the Widow
+- Toxicity
+- Venom
+projectile:
+- Archery
+- Range
+- Sniping
+- the Archer
+- the Ranger
+- the Sniper
+slowing:
+- Chilling
+- Crippling
+- Debilitation
+- Frost
+- Hindering
+- Ice
+- Shivering
+- Slowing
+- Slowness
+- Sluggishness
+- Snow
+- the Arctic
+- the Blizzard
+- the Cold
+- the Slug
+- the Snail
+- the Winter
+- Time
+speed:
+- Dashing
+- Haste
+- Motion
+- Moving
+- Quickness
+- Running
+- Sprinting
+- the Athlete
+- the Cheetah
+- the Gazelle
+- the Fast
+- the Hasty
+- the Quick
+- the Spring
+- the Wolf
+- Ubiquity
+strength:
+- Brutality
+- Damage
+- Damaging
+- Hostility
+- Killing
+- Power
+- Slaughter
+- Strength
+- the Berserker
+- the Brute
+- the Giant
+trap:
+- Contraptions
+- Devices
+- Mechanics
+- Sealing
+- Seals
+- Skill
+- Strategy
+- the Engineer
+- the Hunter
+- the Trapmaster
+- Trapping
+- Traps
+weakness:
+- Crippling
+- Debilitation
+- Impairing
+- the Powerless
+- the Weak
+- the Wimp
+- Weakening
+- Weakness
+wither:
+- Chaos
+- Corruption
+- Darkness
+- Deterioration
+- Dusk
+- Evil
+- Oblivion
+- the Corrupted
+- the Dark
+- the Fall
+- the Nether
+- the Night
+- the Possessed
+- the Wither
+- the Withered
+- Withering

@@ -8,7 +8,6 @@ import com.rit.sucy.enchanting.EListener;
 import com.rit.sucy.enchanting.VanillaData;
 import com.rit.sucy.enchanting.VanillaEnchantment;
 import com.rit.sucy.lore.LoreConfig;
-import com.rit.sucy.lore.TargetLoreConfig;
 import com.rit.sucy.service.ENameParser;
 import com.rit.sucy.service.ERomanNumeral;
 import com.rit.sucy.service.IModule;
@@ -17,7 +16,6 @@ import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -42,7 +40,7 @@ public class EnchantmentAPI extends JavaPlugin{
     /**
      * Adjectives for item lores
      */
-    private List<String> adjectives;
+    private Hashtable<String, List<String>> adjectives;
 
     /**
      * Weapon names for item lores
@@ -52,7 +50,7 @@ public class EnchantmentAPI extends JavaPlugin{
     /**
      * Suffixes for item lores
      */
-    private List<String> suffixes;
+    private Hashtable<String, List<String>> suffixes;
 
     /**
     * Registered modules.
@@ -92,9 +90,9 @@ public class EnchantmentAPI extends JavaPlugin{
      */
     public void reload()
     {
-        adjectives = new LoreConfig(this, "adjectives").getList();
-        weapons = new TargetLoreConfig(this, "weapons").getLists();
-        suffixes = new LoreConfig(this, "suffixes").getList();
+        adjectives = new LoreConfig(this, "adjectives").getLists();
+        weapons = new LoreConfig(this, "weapons").getLists();
+        suffixes = new LoreConfig(this, "suffixes").getLists();
         HandlerList.unregisterAll(this);
         EEquip.clear();
         enchantments.clear();
@@ -119,8 +117,18 @@ public class EnchantmentAPI extends JavaPlugin{
         new AnvilListener(this);
     }
 
-    public String getAdjective() {
-        return adjectives.get((int)(Math.random() * adjectives.size()));
+    public String getAdjective(int level) {
+        if (adjectives.containsKey("tier" + level)) {
+            List<String> list = adjectives.get("tier" + level);
+            return list.get((int)(Math.random() * list.size()));
+        }
+        else {
+            ArrayList<String> all = new ArrayList<String>();
+            for (List<String> list : adjectives.values())
+                for (String adjective : list)
+                    all.add(adjective);
+            return all.get((int)(Math.random() * all.size()));
+        }
     }
 
     public String getWeapon(String item) {
@@ -133,8 +141,21 @@ public class EnchantmentAPI extends JavaPlugin{
         else return type.substring(0, 1).toUpperCase() + type.substring(1);
     }
 
-    public String getSuffix() {
-        return suffixes.get((int)(Math.random() * suffixes.size()));
+    public String getSuffix(CustomEnchantment enchant) {
+        ArrayList<String> options = new ArrayList<String>();
+        if (enchant.getSuffixGroups().size() == 0) {
+            for (List<String> list : suffixes.values())
+                for (String suffix : list)
+                    if (!options.contains(suffix))
+                        options.add(suffix);
+        }
+        else {
+            for (String group : enchant.getSuffixGroups())
+                for (String suffix : suffixes.get(group))
+                    if (!options.contains(suffix))
+                        options.add(suffix);
+        }
+        return options.get((int)(Math.random() * options.size()));
     }
 
     /**

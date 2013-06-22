@@ -5,6 +5,7 @@ import com.rit.sucy.EnchantmentAPI;
 import com.rit.sucy.service.MaterialClass;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
 
@@ -25,8 +26,9 @@ public class EEnchantTable {
      * @param enchantLevel experience level used
      * @return             the enchanted item
      */
-    public static ItemStack enchant(ItemStack item, int enchantLevel) {
+    public static EnchantResult enchant(ItemStack item, int enchantLevel, boolean randomName) {
 
+        EnchantResult result = new EnchantResult();
         boolean chooseEnchantment = true;
         //enchants added to the item
         Map<CustomEnchantment, Integer> choosenEnchantsWithCost = new HashMap<CustomEnchantment, Integer>();
@@ -45,6 +47,7 @@ public class EEnchantTable {
 
             // Modify the enchantment level
             enchantLevel = modifiedLevel(enchantLevel, MaterialClass.getEnchantabilityFor(item.getType()));
+            result.setLevel(enchantLevel);
 
             // Try to add an Enchantment, stop adding enchantments if the enchantment would conflict
             CustomEnchantment enchant = null;
@@ -57,6 +60,7 @@ public class EEnchantTable {
 
                 // Add the enchantment to the list
                 choosenEnchantsWithCost.put(enchant, level);
+                result.setFirstEnchant(enchant);
                 break;
             } while(tries++ < MAX_TRIES);
 
@@ -73,13 +77,16 @@ public class EEnchantTable {
             CustomEnchantment selectedEnchant = enchantCostEntry.getKey();
             int levelCost = enchantCostEntry.getValue();
 
-            if (selectedEnchant == null)
-                return item; //And cancel event
+            if (selectedEnchant == null) {
+                result.setItem(item);
+                return result; //And cancel event
+            }
 
             selectedEnchant.addToItem(item, levelCost);
         }
 
-        return item;
+        result.setItem(item);
+        return result;
     }
 
     /**

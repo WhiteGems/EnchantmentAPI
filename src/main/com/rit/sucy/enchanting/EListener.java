@@ -291,16 +291,21 @@ public class EListener implements Listener {
             event.getEnchanter().getInventory().addItem(storedItem.clone());
             storedItem.setAmount(1);
         }
-        if (plugin.getModuleForClass(RootConfig.class).getBoolean(RootNode.ITEM_LORE)) {
-            String randomName = "" + ChatColor.COLOR_CHAR;
+        boolean randomName = plugin.getModuleForClass(RootConfig.class).getBoolean(RootNode.ITEM_LORE);
+        EnchantResult result = EEnchantTable.enchant(storedItem, event.getExpLevelCost(), randomName);
+        ItemStack item = result.getItem();
+        if (randomName) {
+            String name = "" + ChatColor.COLOR_CHAR;
             int random = (int)(Math.random() * 14) + 49;
             if (random > 57) random += 39;
-            randomName += (char)random + plugin.getAdjective() + " " + plugin.getWeapon(storedItem.getType().name()) + " of " + plugin.getSuffix();
-            ItemMeta meta = storedItem.hasItemMeta() ? storedItem.getItemMeta() : plugin.getServer().getItemFactory().getItemMeta(storedItem.getType());
-            meta.setDisplayName(randomName);
-            storedItem.setItemMeta(meta);
+            name += (char)random + plugin.getAdjective(result.getLevel() / 11 + 1 > 4 ? 4 : result.getLevel() / 11 + 1) + " "
+                    + plugin.getWeapon(item.getType().name())
+                    + " of " + plugin.getSuffix(result.getFirstEnchant());
+            ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : plugin.getServer().getItemFactory().getItemMeta(item.getType());
+            meta.setDisplayName(name);
+            item.setItemMeta(meta);
         }
-        event.getInventory().addItem(EEnchantTable.enchant(storedItem, event.getExpLevelCost()));
+        event.getInventory().addItem(item);
         if (event.getEnchanter().getGameMode() != GameMode.CREATIVE)
             event.getEnchanter().setLevel(event.getEnchanter().getLevel() - event.getExpLevelCost());
     }

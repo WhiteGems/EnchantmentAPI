@@ -44,21 +44,21 @@ public class MainAnvil implements AnvilView {
      */
     public String getNameText() {
         try {
-            // Gross
+            // Gross (Reflection to obtain the field text)
             Field textField = ContainerAnvil.class.getDeclaredField("m");
             textField.setAccessible(true);
             String name = (String)textField.get(anvil);
             if (name == null)
                 return null;
 
-            // More gross
+            // More gross (Reflection to obtain the first item)
             Field g = ContainerAnvil.class.getDeclaredField("g");
             g.setAccessible(true);
             net.minecraft.server.v1_5_R3.ItemStack item = ((IInventory)g.get(anvil)).getItem(0);
             if (item == null)
                 return null;
 
-            // Disgusting
+            // Disgusting (Reflection to obtain the player)
             Field n = ContainerAnvil.class.getDeclaredField("n");
             n.setAccessible(true);
             if (name.equalsIgnoreCase(((EntityHuman)n.get(anvil)).getLocale().c(item.a())))

@@ -5,30 +5,31 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Hashtable;
 import java.util.List;
 
 public class LoreConfig {
 
     private final String fileName;
     private final JavaPlugin plugin;
-    private final String type;
 
     private File configFile;
     private FileConfiguration fileConfiguration;
 
     public LoreConfig(JavaPlugin plugin, String type) {
         this.plugin = plugin;
-        this.type = type;
         this.fileName = type + ".yml";
         this.configFile = new File(plugin.getDataFolder(), fileName);
         saveDefaultConfig();
     }
 
-    public List<String> getList() {
-        return getConfig().getStringList(type);
+    public Hashtable<String, List<String>> getLists() {
+        Hashtable<String, List<String>> table = new Hashtable<String, List<String>>();
+        for (String key : getConfig().getKeys(false))
+            table.put(key, getConfig().getStringList(key));
+        return table;
     }
 
     private void reloadConfig() {
