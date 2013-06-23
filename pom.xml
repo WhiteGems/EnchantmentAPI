@@ -32,6 +32,9 @@
             <resource>
                 <includes>
                     <include>plugin.yml</include>
+                    <include>adjectives.yml</include>
+                    <include>suffixes.yml</include>
+                    <include>weapons.yml</include>
                 </includes>
                 <directory>${basedir}</directory>
                 <filtering>true</filtering>
@@ -100,6 +103,12 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
+            <version>${mc-version}-${bukkit-ver}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bukkit</groupId>
+            <artifactId>craftbukkit</artifactId>
             <version>${mc-version}-${bukkit-ver}</version>
             <scope>compile</scope>
         </dependency>

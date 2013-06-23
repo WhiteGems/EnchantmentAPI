@@ -28,8 +28,10 @@ import com.rit.sucy.service.ConfigNode;
 */
 public enum RootNode implements ConfigNode
 {
+    ITEM_LORE
+            ("Generate Unique Name", VarType.BOOLEAN, true),
     VANILLA_ENABLED
-            (getVisibleSettingsNode() + getVanillaNode() + "Enabled", VarType.BOOLEAN, true),
+            (getVisibleSettingsNode() + getVanillaNode() + "Enabled", VarType.BOOLEAN, false),
     VANILLA_WEIGHT
             (getVisibleSettingsNode() + getVanillaNode() + "Weight", VarType.BOOLEAN, true),
     VANILLA_ITEMS
@@ -44,6 +46,7 @@ public enum RootNode implements ConfigNode
             (getVisibleSettingsNode() + getCustomNode() + "Items", VarType.BOOLEAN, true),
     CUSTOM_GROUPS
             (getVisibleSettingsNode() + getCustomNode() + "Groups", VarType.BOOLEAN, true),
+
     ;
 
     /**

@@ -2,7 +2,10 @@ package com.rit.sucy.enchanting;
 
 import com.rit.sucy.CustomEnchantment;
 import com.rit.sucy.EnchantmentAPI;
+import com.rit.sucy.config.RootConfig;
+import com.rit.sucy.config.RootNode;
 import com.rit.sucy.service.ENameParser;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
@@ -23,6 +26,8 @@ import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.*;
 import org.bukkit.inventory.EnchantingInventory;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemFactory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.plugin.Plugin;
@@ -37,7 +42,7 @@ public class EListener implements Listener {
     /**
      * Plugin reference
      */
-    Plugin plugin;
+    EnchantmentAPI plugin;
 
     /**
      * Whether or not to excuse the next player attack event
@@ -49,7 +54,7 @@ public class EListener implements Listener {
      *
      * @param plugin plugin to register this listener to
      */
-    public EListener(Plugin plugin) {
+    public EListener(EnchantmentAPI plugin) {
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
         this.plugin = plugin;
     }
@@ -234,6 +239,7 @@ public class EListener implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
+        Inventory inv = event.getInventory();
         if (event.getInventory().getType() == InventoryType.ENCHANTING && event.isShiftClick()) {
             if (tasks.containsKey(event.getWhoClicked().getName())) {
                 tasks.get(event.getWhoClicked().getName()).restore();
@@ -285,7 +291,21 @@ public class EListener implements Listener {
             event.getEnchanter().getInventory().addItem(storedItem.clone());
             storedItem.setAmount(1);
         }
-        event.getInventory().addItem(EEnchantTable.enchant(storedItem, event.getExpLevelCost()));
+        boolean randomName = plugin.getModuleForClass(RootConfig.class).getBoolean(RootNode.ITEM_LORE);
+        EnchantResult result = EEnchantTable.enchant(storedItem, event.getExpLevelCost(), randomName);
+        ItemStack item = result.getItem();
+        if (randomName) {
+            String name = "" + ChatColor.COLOR_CHAR;
+            int random = (int)(Math.random() * 14) + 49;
+            if (random > 57) random += 39;
+            name += (char)random + plugin.getAdjective(result.getLevel() / 11 + 1 > 4 ? 4 : result.getLevel() / 11 + 1) + " "
+                    + plugin.getWeapon(item.getType().name())
+                    + " of " + plugin.getSuffix(result.getFirstEnchant());
+            ItemMeta meta = item.hasItemMeta() ? item.getItemMeta() : plugin.getServer().getItemFactory().getItemMeta(item.getType());
+            meta.setDisplayName(name);
+            item.setItemMeta(meta);
+        }
+        event.getInventory().addItem(item);
         if (event.getEnchanter().getGameMode() != GameMode.CREATIVE)
             event.getEnchanter().setLevel(event.getEnchanter().getLevel() - event.getExpLevelCost());
     }
